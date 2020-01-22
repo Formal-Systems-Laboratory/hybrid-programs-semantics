@@ -27,7 +27,7 @@ def build_khp(backend, alias, tangle_selector = '', flags = ''):
                           , tangle_selector = '.k,' + tangle_selector
                           )
 
-khp_defn = build_khp(backend = 'ocaml', alias = 'execution')
+khp_defn = build_khp(backend = 'haskell', alias = 'execution')
 
 # Testing
 # =======
