@@ -28,6 +28,9 @@ module KHP
     configuration <k> $PGM:Stmt </k>
                   <state> .Map </state>
 
+    rule <k> X := A => . </k>
+         <state> M  => M[ X <- A ] </state>
+
 endmodule
 
 ```
