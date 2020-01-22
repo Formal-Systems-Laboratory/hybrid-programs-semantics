@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+
+# Bootstrapping
+# =============
+
+subprocess.check_call(['git', 'submodule', 'update', '--init', '--recursive'])
+extdir = 'ext'
+sys.path.append(os.path.join(os.path.dirname(__file__), extdir))
+
+from kninja import *
+
+# Build
+# =====
+
+proj = KProject(extdir = extdir)
+
+def build_khp(backend, alias, tangle_selector = '', flags = ''):
+    return proj.definition( alias         = alias
+                          , backend       = backend
+                          , main          = 'khp.md'
+                          , flags         = '--syntax-module KHP-SYNTAX ' + flags
+                          , runner_script = './khp'
+                          , tangle_selector = '.k,' + tangle_selector
+                          )
+
+khp_defn = build_khp(backend = 'ocaml', alias = 'execution')
+
+# Testing
+# =======
+
+khp_defn.tests(glob = 't/*.khp', alias = 'tests')
+
+
+# Main
+# ====
+
+proj.main()
