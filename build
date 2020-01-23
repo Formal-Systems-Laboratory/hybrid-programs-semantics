@@ -32,7 +32,7 @@ khp_defn = build_khp(backend = 'haskell', alias = 'execution')
 # Testing
 # =======
 
-khp_defn.tests(glob = 't/*.khp', alias = 'tests')
+khp_defn.tests(glob = 't/*.khp', alias = 'tests', flags = '--search-final')
 
 
 # Main
