@@ -1,8 +1,12 @@
-<generatedTop>
-  <k>
-    .
-  </k>
-  <state>
-    a |-> 0
-  </state>
-</generatedTop>
+{
+  Result
+#Equals
+  <generatedTop>
+    <k>
+      .
+    </k>
+    <state>
+      a |-> 0
+    </state>
+  </generatedTop>
+}

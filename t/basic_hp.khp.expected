@@ -1,8 +1,12 @@
-<generatedTop>
-  <k>
-    .
-  </k>
-  <state>
-    a |-> ?I +Int 1
-  </state>
-</generatedTop>
+{
+  Result
+#Equals
+  <generatedTop>
+    <k>
+      .
+    </k>
+    <state>
+      a |-> ?I +Int 1
+    </state>
+  </generatedTop>
+}
