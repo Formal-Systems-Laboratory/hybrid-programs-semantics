@@ -33,8 +33,10 @@ module KHP-SYNTAX
                   | "?" BExp        [strict]
 
     syntax Stmts ::= Stmt
-                   | Stmts ";" Stmts   [right]
                    | "{" Stmts "}"     [bracket]
+                   | "(" Stmts ")"     [bracket]
+                   | Stmts "U" Stmts
+                   > Stmts ";" Stmts   [right]
 ```
 
 A Hybrid Program is represented as following -
@@ -112,6 +114,16 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
     rule <k> ?(B:Bool) => . ... </k>
         requires B ==Bool true
+```
+
+### Nondeterminstic Choice
+
+The choice operator `a U b`
+Nondeterminstically chooses one of the sub hybrid programs.
+
+```{.k}
+    rule P1:Stmts U P2:Stmts => P1
+    rule P1:Stmts U P2:Stmts => P2
 
 endmodule
 ```
