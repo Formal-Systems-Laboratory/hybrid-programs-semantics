@@ -105,9 +105,5 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule <k> ?(B:Bool) => . ... </k>
         requires B ==Bool true
 
-    syntax KItem ::= "#abort"
-    rule <k> ?(B:Bool) ~> _ => #abort </k>
-        requires B ==Bool false
-
 endmodule
 ```
