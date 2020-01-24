@@ -35,7 +35,7 @@ module KHP-SYNTAX
 ```
 
 A Hybrid Program is represented as following -
- * vars <Variables Declarations> ; <Pgm>
+ - vars `<Variables Declarations> ; <Pgm>`
 
 where `Variable Declarations` are program variables
 in the Hybrid Program.
