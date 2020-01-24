@@ -27,10 +27,25 @@ module KHP-SYNTAX
 
     syntax Exp ::= AExp
                  > BExp
+```
 
+### Discrete Assignments and Conditionals
+
+
+```{.k}
     syntax Stmt ::= Id ":=" Exp     [strict(2)]
                   | Id ":=" "*"
                   | "?" BExp        [strict]
+```
+
+### Continuous Assignments (Evolutions)
+
+```{.k}
+
+    syntax ContAssgn ::= Id "'" "=" AExp            [strict(2)]
+                       | ContAssgn "," ContAssgn    [right]
+
+    syntax Stmt ::= ContAssgn "&" BExp
 
     syntax Stmts ::= Stmt
                    | "{" Stmts "}"     [bracket]
@@ -124,6 +139,22 @@ Nondeterminstically chooses one of the sub hybrid programs.
 ```{.k}
     rule P1:Stmts U P2:Stmts => P1
     rule P1:Stmts U P2:Stmts => P2
+```
+
+### Continuous Evolutions
+
+```{.k}
+    rule A1:ContAssgn , A2:ContAssgn & B:BExp
+      => {A1}:>ContAssgn & B ~> {A2}:>ContAssgn & B
+
+    // Strictness not causing term to heat for some reason
+    context X:Id ' = HOLE:AExp & _
 
 endmodule
 ```
+
+
+
+
+
+
