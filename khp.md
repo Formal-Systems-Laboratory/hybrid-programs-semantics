@@ -27,10 +27,24 @@ module KHP-SYNTAX
 
     syntax Exp ::= AExp
                  > BExp
+```
 
+### Discrete Assignments and Conditionals
+
+```{.k}
     syntax Stmt ::= Id ":=" Exp     [strict(2)]
                   | Id ":=" "*"
                   | "?" BExp        [strict]
+```
+
+### Continuous Assignments (Evolutions)
+
+```{.k}
+
+    syntax ContAssgn ::= Id "'" "=" AExp            [strict(2)]
+                       | ContAssgn "," ContAssgn    [right]
+
+    syntax Stmt ::= ContAssgn "&" BExp
 
     syntax Stmts ::= Stmt
                    | "{" Stmts "}"     [bracket]
@@ -124,6 +138,44 @@ Nondeterminstically chooses one of the sub hybrid programs.
 ```{.k}
     rule P1:Stmts U P2:Stmts => P1
     rule P1:Stmts U P2:Stmts => P2
+```
+
+### Continuous Evolutions
+
+The differential dynamic logic continuous evolution rule is defined as -
+
+   ( x' = f & B ) evolves as
+ - exists a T such that
+    1. S(T) satisfies B
+    2. S(0) = X_Initial
+    3. V 0 <= t <= T . S(t) satisfies B
+    4. V 0 < t < T . S'(t) = f
+
+```{.k}
+    // Strictness not causing term to heat for some reason
+    context X:Id ' = HOLE:AExp & _
+
+    syntax Stmt ::= "#setConstraint" "(" BExp ")"    [strict]
+                   | "#setTime" "(" AExp ")"         [strict]
+
+    rule A1:ContAssgn , A2:ContAssgn & B:BExp => A1 & B ~> A2 & B
+```
+
+### Linear Solutions
+
+```{.k}
+    rule <k> (X:Id ' = I:Int & B:BExp => #setTime(?T:Int) ~> #setConstraint(B)) ... </k>
+         <state> ...
+                (X |-> ( V => (V +Int (I *Int ?T:Int))))
+                ...
+         </state>
+
+    rule <k> (#setTime(T:Int) => .) ... </k>
+         <state> M:Map => M [ String2Id("t") <- T ] </state>
+
+    rule #setConstraint( B:Bool ) => .
+        requires B ==Bool true
 
 endmodule
 ```
+

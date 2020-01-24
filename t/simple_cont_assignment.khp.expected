@@ -1,0 +1,23 @@
+  #Not ( #Not ( {
+    ?INITIAL +Int ?INITIAL0 *Int ?T <=Int 10
+  #Equals
+    true
+  } ) )
+#And
+  <generatedTop>
+    <k>
+      .
+    </k>
+    <state>
+      a |-> ?INITIAL1:Int
+      t |-> ?T:Int
+      v |-> ?INITIAL0:Int
+      x |-> ?INITIAL +Int ?INITIAL0 *Int ?T
+    </state>
+  </generatedTop>
+#And
+  {
+    ?INITIAL +Int ?INITIAL0 *Int ?T <=Int 10
+  #Equals
+    true
+  }
