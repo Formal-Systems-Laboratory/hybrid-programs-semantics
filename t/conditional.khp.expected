@@ -1,49 +1,20 @@
-    #Not ( #Not ( {
-      ?I >Int 2
-    #Equals
-      false
-    } ) )
-  #And
-    {
-      ?I >Int 2
-    #Equals
-      false
-    }
-  #And
-    {
-      Result
-    #Equals
-      <generatedTop>
-        <k>
-          #abort
-        </k>
-        <state>
-          a |-> ?I:Int
-        </state>
-      </generatedTop>
-    }
-#Or
-    #Not ( #Not ( {
-      ?I >Int 2
-    #Equals
-      true
-    } ) )
-  #And
-    {
-      ?I >Int 2
-    #Equals
-      true
-    }
-  #And
-    {
-      Result
-    #Equals
-      <generatedTop>
-        <k>
-          .
-        </k>
-        <state>
-          a |-> 2
-        </state>
-      </generatedTop>
-    }
+  #Not ( #Not ( {
+    ?INITIAL >Int 2
+  #Equals
+    true
+  } ) )
+#And
+  <generatedTop>
+    <k>
+      .
+    </k>
+    <state>
+      a |-> 2
+    </state>
+  </generatedTop>
+#And
+  {
+    ?INITIAL >Int 2
+  #Equals
+    true
+  }

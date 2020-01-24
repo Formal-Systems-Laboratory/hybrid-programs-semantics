@@ -1,12 +1,8 @@
-{
-  Result
-#Equals
-  <generatedTop>
-    <k>
-      .
-    </k>
-    <state>
-      a |-> 7
-    </state>
-  </generatedTop>
-}
+<generatedTop>
+  <k>
+    .
+  </k>
+  <state>
+    a |-> 7
+  </state>
+</generatedTop>
