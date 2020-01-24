@@ -96,7 +96,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ### Arithmetic + Bool Expressions
 
- - Todo: Switch or implement support for Reals
+ - Todo: Implement basic support for Reals
 
 ```{.k}
     rule A:Int * B:Int => A *Int B
@@ -104,8 +104,10 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
     rule A:Int > B:Int => A >Int B
     rule A:Int < B:Int => A <Int B
+
     rule A:Int >= B:Int => A >=Int B
     rule A:Int <= B:Int => A <=Int B
+
     rule A:Bool && B:Bool => A andBool B
 
     rule <k> ?(B:Bool) => . ... </k>
