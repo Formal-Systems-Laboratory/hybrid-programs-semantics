@@ -23,15 +23,18 @@ module KHP-SYNTAX
                   | AExp "<" AExp   [strict]
                   | AExp ">=" AExp  [strict]
                   | AExp "<=" AExp  [strict]
+                  | BExp "&&" BExp  [strict]
 
     syntax Exp ::= AExp
                  > BExp
 
     syntax Stmt ::= Id ":=" Exp     [strict(2)]
+                  | Id ":=" "*"
                   | "?" BExp        [strict]
 
     syntax Stmts ::= Stmt
                    | Stmts ";" Stmts   [right]
+                   | "{" Stmts "}"     [bracket]
 ```
 
 A Hybrid Program is represented as following -
@@ -72,7 +75,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ```{.k}
     rule <k> vars ( X:Id , L:VarDecls => L) ; _ </k>
-         <state> ... .Map => (X |-> ?I:Int) ... </state>
+         <state> ... .Map => (X |-> ?INITIAL:Int) ... </state>
 
     rule <k> vars .VarDecls ; S:Stmts => S </k>
 
@@ -84,6 +87,8 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 ```{.k}
     rule <k> (X:Id := A:Int => .) ... </k>
          <state> ... X |-> (_ => A) ... </state>
+    rule <k> (X:Id := * => .) ... </k>
+         <state> ... X |-> (_ => ?NONDET:Int) ... </state>
 
     rule <k> X:Id => V ... </k>
          <state> ... (X |-> V) ... </state>
@@ -101,6 +106,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule A:Int < B:Int => A <Int B
     rule A:Int >= B:Int => A >=Int B
     rule A:Int <= B:Int => A <=Int B
+    rule A:Bool && B:Bool => A andBool B
 
     rule <k> ?(B:Bool) => . ... </k>
         requires B ==Bool true
