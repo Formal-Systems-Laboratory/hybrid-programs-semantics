@@ -1,23 +1,17 @@
-  #Not ( #Not ( {
-    ?INITIAL +Int ?INITIAL0 *Int ?T <=Int 10
-  #Equals
-    true
-  } ) )
-#And
-  <generatedTop>
-    <k>
-      .
-    </k>
-    <state>
-      a |-> ?INITIAL1:Int
-      t |-> ?T:Int
-      v |-> ?INITIAL0:Int
-      x |-> ?INITIAL +Int ?INITIAL0 *Int ?T
-    </state>
-  </generatedTop>
-#And
-  {
-    ?INITIAL +Int ?INITIAL0 *Int ?T <=Int 10
-  #Equals
-    true
-  }
+<generatedTop>
+  <k>
+    .
+  </k>
+  <state>
+    ep |-> 5
+    f |-> ?NONDET:Int
+    t |-> 0 +Int 1 *Int ?T
+    t_traj |-> #interval { ( 0 <= ?T20:Int ) && ?T20:Int <= ?T:Int } ( 0 +Int 1 *Int ?T20 )
+    x |-> ?INITIAL +Int ?NONDET *Int ?T
+    x_traj |-> #interval { ( 0 <= ?T2:Int ) && ?T2:Int <= ?T:Int } ( ?INITIAL +Int ?NONDET *Int ?T2 )
+  </state>
+  <evolutionConditions>
+    SetItem ( #interval { ( 0 <= ?T2:Int ) && ?T2:Int <= ?T:Int } ( ?INITIAL +Int ?NONDET *Int ?T2 ) >=Int 0 )
+    SetItem ( #interval { ( 0 <= ?T20:Int ) && ?T20:Int <= ?T:Int } ( 0 +Int 1 *Int ?T20 ) <=Int 5 )
+  </evolutionConditions>
+</generatedTop>

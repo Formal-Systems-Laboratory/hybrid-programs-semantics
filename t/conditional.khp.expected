@@ -11,6 +11,9 @@
     <state>
       a |-> 2
     </state>
+    <evolutionConditions>
+      .Set
+    </evolutionConditions>
   </generatedTop>
 #And
   {

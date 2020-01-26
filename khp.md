@@ -5,10 +5,13 @@ We describe the semantics of Hybrid Program, as presented in Differential
 Dynamic Logic in K
 
 ```{.k}
+require "substitution.k"
+
 module KHP-SYNTAX
     imports BOOL
     imports ID
     imports INT
+    imports SUBSTITUTION
 
     syntax AExp ::= Id | Int
                  | ( AExp )        [bracket]
@@ -43,8 +46,10 @@ module KHP-SYNTAX
 
     syntax ContAssgn ::= Id "'" "=" AExp            [strict(2)]
                        | ContAssgn "," ContAssgn    [right]
+    syntax ContBExp ::= BExp
+                      | ContBExp "," ContBExp       [right]
 
-    syntax Stmt ::= ContAssgn "&" BExp
+    syntax Stmt ::= ContAssgn "&" ContBExp
 
     syntax Stmts ::= Stmt
                    | "{" Stmts "}"     [bracket]
@@ -82,6 +87,7 @@ module KHP
 
     configuration <k> $PGM:Pgm </k>
                   <state> .Map </state>
+                  <evolutionConditions> .Set </evolutionConditions>
 
     syntax KResult ::= Bool | Int
 ```
@@ -152,29 +158,74 @@ The differential dynamic logic continuous evolution rule is defined as -
     4. V 0 < t < T . S'(t) = f
 
 ```{.k}
-    // Strictness not causing term to heat for some reason
-    context X:Id ' = HOLE:AExp & _
 
-    syntax Stmt ::= "#setConstraint" "(" BExp ")"    [strict]
-                   | "#setTime" "(" AExp ")"         [strict]
+    syntax Id ::= "#appendStrToPgmVar" "(" Id "," String ")"        [function]
 
-    rule A1:ContAssgn , A2:ContAssgn & B:BExp => A1 & B ~> A2 & B
+    rule #appendStrToPgmVar(I:Id, S:String) => String2Id(Id2String(I) +String "_traj")
+
+    syntax ContBExp ::= "#renamePgmVars" "(" ContBExp ")"        [function]
+
+    rule #renamePgmVars(X:Id <= A:AExp) => (#appendStrToPgmVar(X, "_traj") <= A)
+    rule #renamePgmVars(X:Id >= A:AExp) => (#appendStrToPgmVar(X, "_traj") >= A)
+
+    rule #renamePgmVars(X:Id < A:AExp) => (#appendStrToPgmVar(X, "_traj") < A)
+    rule #renamePgmVars(X:Id > A:AExp) => (#appendStrToPgmVar(X, "_traj") > A)
+
+    rule #renamePgmVars(B1:BExp, B2:ContBExp) => #renamePgmVars(B1) ,  #renamePgmVars(B2)
+
+    rule A1:ContAssgn , A2:ContAssgn & B:ContBExp => A1 ~> A2 ~> #renamePgmVars(B)
 ```
 
 ### Linear Solutions
 
 ```{.k}
-    rule <k> (X:Id ' = I:Int & B:BExp => #setTime(?T:Int) ~> #setConstraint(B)) ... </k>
+
+    syntax Trajectory ::= "#interval" "{" BExp "}" AExp
+
+    syntax Int ::= Trajectory
+
+    syntax KResult ::= Trajectory
+
+
+    syntax KItem ::= "#intervalBoundary" "(" Int ")"
+
+    rule <k> X:Id ' = I:Int => #intervalBoundary(?T:Int) ... </k>
          <state> ...
                 (X |-> ( V => (V +Int (I *Int ?T:Int))))
+                (.Map =>  #appendStrToPgmVar(X, "_traj")
+                          |-> ( #interval { (0 <= ?T2:Int) && (?T2:Int <= ?T:Int) }
+                                (V +Int (I *Int ?T2:Int))
+                              )
+                )
                 ...
          </state>
 
-    rule <k> (#setTime(T:Int) => .) ... </k>
-         <state> M:Map => M [ String2Id("t") <- T ] </state>
+    rule <k> #intervalBoundary(T) ~> X:Id ' = I:Int => #intervalBoundary(T) ... </k>
+         <state> ...
+                (X |-> ( V => (V +Int (I *Int T:Int))))
+                (.Map =>  #appendStrToPgmVar(X, "_traj")
+                          |-> ( #interval { (0 <= ?T2:Int) && (?T2:Int <= T:Int) }
+                                (V +Int (I *Int ?T2:Int))
+                              )
+                )
+                ...
+         </state>
+```
 
-    rule #setConstraint( B:Bool ) => .
-        requires B ==Bool true
+Mechanism to handle storing evolution conditions
+
+```{.k}
+    syntax KItem ::= "#store"
+                   | "#storeDone"
+
+    rule #intervalBoundary(_) ~> B:ContBExp => B ~> #storeDone
+
+    rule B1:BExp , B2:ContBExp => B1 ~> #store ~> B2
+    rule B1:Exp ~> #storeDone => B1 ~> #store
+
+    rule <k> B:Bool ~> #store => . ... </k>
+         <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
+
 
 endmodule
 ```

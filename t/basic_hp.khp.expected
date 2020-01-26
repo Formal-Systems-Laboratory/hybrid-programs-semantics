@@ -5,4 +5,7 @@
   <state>
     a |-> ?INITIAL +Int 1
   </state>
+  <evolutionConditions>
+    .Set
+  </evolutionConditions>
 </generatedTop>
