@@ -5,13 +5,10 @@ We describe the semantics of Hybrid Program, as presented in Differential
 Dynamic Logic in K
 
 ```{.k}
-require "substitution.k"
-
 module KHP-SYNTAX
     imports BOOL
     imports ID
     imports INT
-    imports SUBSTITUTION
 
     syntax AExp ::= Id | Int
                  | ( AExp )        [bracket]
