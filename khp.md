@@ -5,12 +5,14 @@ We describe the semantics of Hybrid Program, as presented in Differential
 Dynamic Logic in K
 
 ```{.k}
+requires "khp-real.k"
+
 module KHP-SYNTAX
     imports BOOL
     imports ID
-    imports INT
+    imports REAL
 
-    syntax AExp ::= Id | Int
+    syntax AExp ::= Id | Real
                  | ( AExp )        [bracket]
                  | AExp "*" AExp   [strict, left]
                  | AExp "/" AExp   [strict, left]
@@ -86,7 +88,7 @@ module KHP
                   <state> .Map </state>
                   <evolutionConditions> .Set </evolutionConditions>
 
-    syntax KResult ::= Bool | Int
+    syntax KResult ::= Bool | Real
 ```
 
 Hybrid Program states are maps from program variables to Reals.
@@ -94,7 +96,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ```{.k}
     rule <k> vars ( X:Id , L:VarDecls => L) ; _ </k>
-         <state> ... .Map => (X |-> ?INITIAL:Int) ... </state>
+         <state> ... .Map => (X |-> ?INITIAL:Real) ... </state>
 
     rule <k> vars .VarDecls ; S:Stmts => S </k>
 
@@ -104,10 +106,10 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 ### Discrete Assignment and Lookup
 
 ```{.k}
-    rule <k> (X:Id := A:Int => .) ... </k>
+    rule <k> (X:Id := A:Real => .) ... </k>
          <state> ... X |-> (_ => A) ... </state>
     rule <k> (X:Id := * => .) ... </k>
-         <state> ... X |-> (_ => ?NONDET:Int) ... </state>
+         <state> ... X |-> (_ => ?NONDET:Real) ... </state>
 
     rule <k> X:Id => V ... </k>
          <state> ... (X |-> V) ... </state>
@@ -118,14 +120,14 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
  - Todo: Implement basic support for Reals
 
 ```{.k}
-    rule A:Int * B:Int => A *Int B
-    rule A:Int + B:Int => A +Int B
+    rule A:Real * B:Real => A *Real B
+    rule A:Real + B:Real => A +Real B
 
-    rule A:Int > B:Int => A >Int B
-    rule A:Int < B:Int => A <Int B
+    rule A:Real > B:Real => A >Real B
+    rule A:Real < B:Real => A <Real B
 
-    rule A:Int >= B:Int => A >=Int B
-    rule A:Int <= B:Int => A <=Int B
+    rule A:Real >= B:Real => A >=Real B
+    rule A:Real <= B:Real => A <=Real B
 
     rule A:Bool && B:Bool => A andBool B
 
@@ -179,30 +181,30 @@ The differential dynamic logic continuous evolution rule is defined as -
 
     syntax Trajectory ::= "#interval" "{" BExp "}" AExp
 
-    syntax Int ::= Trajectory
+    syntax Real ::= Trajectory
 
     syntax KResult ::= Trajectory
 
 
-    syntax KItem ::= "#intervalBoundary" "(" Int ")"
+    syntax KItem ::= "#intervalBoundary" "(" Real ")"
 
-    rule <k> X:Id ' = I:Int => #intervalBoundary(?T:Int) ... </k>
+    rule <k> X:Id ' = I:Real => #intervalBoundary(?T:Real) ... </k>
          <state> ...
-                (X |-> ( V => (V +Int (I *Int ?T:Int))))
+                (X |-> ( V => (V +Real (I *Real ?T:Real))))
                 (.Map =>  #appendStrToPgmVar(X, "_traj")
-                          |-> ( #interval { (0 <= ?T2:Int) && (?T2:Int <= ?T:Int) }
-                                (V +Int (I *Int ?T2:Int))
+                          |-> ( #interval { ({0.0}:>Real <= ?T2:Real) && (?T2:Real <= ?T:Real) }
+                                (V +Real (I *Real ?T2:Real))
                               )
                 )
                 ...
          </state>
 
-    rule <k> #intervalBoundary(T) ~> X:Id ' = I:Int => #intervalBoundary(T) ... </k>
+    rule <k> #intervalBoundary(T) ~> X:Id ' = I:Real => #intervalBoundary(T) ... </k>
          <state> ...
-                (X |-> ( V => (V +Int (I *Int T:Int))))
+                (X |-> ( V => (V +Real (I *Real T:Real))))
                 (.Map =>  #appendStrToPgmVar(X, "_traj")
-                          |-> ( #interval { (0 <= ?T2:Int) && (?T2:Int <= T:Int) }
-                                (V +Int (I *Int ?T2:Int))
+                          |-> ( #interval { ({0.0}:>Real <= ?T2:Real) && (?T2:Real <= T:Real) }
+                                (V +Real (I *Real ?T2:Real))
                               )
                 )
                 ...
@@ -222,7 +224,6 @@ Mechanism to handle storing evolution conditions
 
     rule <k> B:Bool ~> #store => . ... </k>
          <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
-
 
 endmodule
 ```
