@@ -1,1 +1,1 @@
-vars a ; a := 0
+vars a ; a := 0.0
