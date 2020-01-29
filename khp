@@ -10,7 +10,7 @@ proj = KProject(extdir = extdir)
 
 KDefinition( proj
            , alias = 'execution'
-           , backend = 'haskell'
+           , backend = 'java'
            , directory = proj.builddir('defn/execution')
            )
 
