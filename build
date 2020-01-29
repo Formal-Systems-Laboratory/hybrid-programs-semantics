@@ -34,11 +34,12 @@ khp_defn = build_khp(backend = 'java', alias = 'execution')
 # =======
 
 khp_defn.tests( glob = 't/execution/*.khp'
-              , alias = 'execution-tests')
+              , alias = 'execution-tests'
+              , flags = '-cMODE=\"#regular\"')
 
-khp_defn.tests( glob  = 't/constraint-synthesis/*.khp'
-              , alias = 'synthesis-tests'
-              , flags = '-cMODE=\"#synthesizeConstraints\"')
+# khp_defn.tests( glob  = 't/constraint-synthesis/*.khp'
+#               , alias = 'synthesis-tests'
+#               , flags = '-cMODE=\"#synthesizeConstraints\"')
 
 # Main
 # ====
