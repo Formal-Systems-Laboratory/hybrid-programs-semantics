@@ -83,10 +83,18 @@ module KHP
     imports KHP-SYNTAX
     imports MAP
 
+    syntax Mode ::= "#regular"
+                  | "#constraintSynthesis"
 
-    configuration <k> $PGM:Pgm </k>
+    syntax KItem ::= "#processMode" "(" Mode ")"
+                   | "#synthesizeConstraints"
+
+    configuration <k> #processMode($MODE) ~> $PGM:Pgm </k>
                   <state> .Map </state>
                   <evolutionConditions> .Set </evolutionConditions>
+
+    rule #processMode(#regular) ~> P:Pgm => P
+    rule #processMode(#constraintSynthesis) ~> P:Pgm => P ~> #synthesizeConstraints
 
     syntax KResult ::= Bool | Real
 ```
@@ -95,10 +103,10 @@ Hybrid Program states are maps from program variables to Reals.
 For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ```{.k}
-    rule <k> vars ( X:Id , L:VarDecls => L) ; _ </k>
+    rule <k> vars ( X:Id , L:VarDecls => L) ; _ ... </k>
          <state> ... .Map => (X |-> ?INITIAL:Real) ... </state>
 
-    rule <k> vars .VarDecls ; S:Stmts => S </k>
+    rule vars .VarDecls ; S:Stmts => S
 
     rule E1:Stmt ; E2:Stmts => E1 ~> E2
 ```
