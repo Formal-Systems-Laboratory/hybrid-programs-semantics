@@ -132,7 +132,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule A:Bool && B:Bool => A andBool B
 
     rule <k> ?(B:Bool) => . ... </k>
-        requires B ==Bool true
+         <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
 ```
 
 ### Nondeterminstic Choice

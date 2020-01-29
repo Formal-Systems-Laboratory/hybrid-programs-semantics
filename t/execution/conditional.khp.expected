@@ -6,6 +6,6 @@
     a |-> 3.0
   </state>
   <evolutionConditions>
-    .Set
+    SetItem ( V0 >Real 2.0 )
   </evolutionConditions>
 </generatedTop>
