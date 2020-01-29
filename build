@@ -33,7 +33,7 @@ khp_defn = build_khp(backend = 'java', alias = 'execution')
 # Testing
 # =======
 
-khp_defn.tests(glob = 't/*.khp', alias = 'tests')
+khp_defn.tests(glob = 't/execution/*.khp', alias = 'execution-tests')
 
 
 # Main

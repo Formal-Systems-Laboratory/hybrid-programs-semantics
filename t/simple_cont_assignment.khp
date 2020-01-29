@@ -1,1 +1,0 @@
-vars x, f, t, ep ; ep := 5 ; f := * ; t := 0 ; x ' = f , t' = 1 & x >= 0 , t <= ep

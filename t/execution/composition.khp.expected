@@ -3,7 +3,8 @@
     .
   </k>
   <state>
-    a |-> 7
+    a |-> V0 +Real 1.0
+    b |-> ( V0 +Real 1.0 ) *Real 2.0
   </state>
   <evolutionConditions>
     .Set

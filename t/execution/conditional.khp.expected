@@ -3,7 +3,7 @@
     .
   </k>
   <state>
-    a |-> ?INITIAL +Int 1
+    a |-> 3.0
   </state>
   <evolutionConditions>
     .Set

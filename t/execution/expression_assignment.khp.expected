@@ -3,8 +3,7 @@
     .
   </k>
   <state>
-    a |-> ?INITIAL +Int 1
-    b |-> ( ?INITIAL +Int 1 ) *Int 2
+    a |-> 7.
   </state>
   <evolutionConditions>
     .Set
