@@ -8,7 +8,12 @@ module REAL-SYNTAX
     imports STRING-SYNTAX
     imports STRING
 
-    syntax Real ::= r"[0-9]+\\.[0-9]*"  [token, prefer, prec(2)]
+    syntax RealVal ::= r"[0-9]+\\.[0-9]*"  [token, prefer, prec(1)]
+
+    syntax RealVar ::= "#RealVar" "(" String ")"
+
+    syntax Real ::= RealVal
+                  | RealVar
                   | Real "/Real" Real   [function]
                   | Real "*Real" Real   [function]
                   | Real "^Real" Real   [function]
@@ -42,84 +47,84 @@ module REAL
     rule #processResult(#systemResult(0, "True\n", _)) => {true}:>Bool
     rule #processResult(#systemResult(0, "False\n", _)) => {false}:>Bool
 
-    rule A +Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String "+"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                      }:>Real	[concrete]
+    rule A:RealVal +Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                               +String Real2String(A)
+                                                               +String "+"
+                                                               +String Real2String(B)
+                                                               )
+                                                      )
+                                      }:>Real
 
-    rule A -Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String "-"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                      }:>Real	[concrete]
+    rule A:RealVal -Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                              +String Real2String(A)
+                                                              +String "-"
+                                                              +String Real2String(B)
+                                                              )
+                                                     )
+                                     }:>Real
 
-    rule A *Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String "*"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                      }:>Real	[concrete]
+    rule A:RealVal *Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                               +String Real2String(A)
+                                                               +String "*"
+                                                               +String Real2String(B)
+                                                               )
+                                                      )
+                                      }:>Real
 
-    rule A /Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String "/"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                      }:>Real	[concrete]
+    rule A:RealVal /Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                               +String Real2String(A)
+                                                               +String "/"
+                                                               +String Real2String(B)
+                                                               )
+                                                      )
+                                      }:>Real
 
-    rule A ^Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String "^"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                      }:>Real	[concrete]
+    rule A:RealVal ^Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                               +String Real2String(A)
+                                                               +String "^"
+                                                               +String Real2String(B)
+                                                               )
+                                                      )
+                                      }:>Real
 
-    rule A ==Real B => { #processResult( #system( "wolframscript -c "
-                                                +String Real2String(A)
-                                                +String "=="
-                                                +String Real2String(B)
-                                                )
-                                       )
-                       }:>Bool	[concrete]
+    rule A:RealVal ==Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                                +String Real2String(A)
+                                                                +String "=="
+                                                                +String Real2String(B)
+                                                                )
+                                                       )
+                                       }:>Bool
 
-    rule A >=Real B => { #processResult( #system( "wolframscript -c "
-                                                +String Real2String(A)
-                                                +String ">="
-                                                +String Real2String(B)
-                                                )
-                                       )
-                       }:>Bool	[concrete]
+    rule A:RealVal >=Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                                +String Real2String(A)
+                                                                +String ">="
+                                                                +String Real2String(B)
+                                                                )
+                                                       )
+                                       }:>Bool
 
-    rule A <=Real B => { #processResult( #system( "wolframscript -c "
-                                                +String Real2String(A)
-                                                +String "<="
-                                                +String Real2String(B)
-                                                )
-                                       )
-                       }:>Bool	[concrete]
+    rule A:RealVal <=Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                                +String Real2String(A)
+                                                                +String "<="
+                                                                +String Real2String(B)
+                                                                )
+                                                       )
+                                       }:>Bool
 
-    rule A <Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String "<"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                       }:>Bool	[concrete]
+    rule A:RealVal <Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                               +String Real2String(A)
+                                                               +String "<"
+                                                               +String Real2String(B)
+                                                               )
+                                                      )
+                                       }:>Bool
 
-    rule A >Real B => { #processResult( #system( "wolframscript -c "
-                                               +String Real2String(A)
-                                               +String ">"
-                                               +String Real2String(B)
-                                               )
-                                      )
-                       }:>Bool	[concrete]
+    rule A:RealVal >Real B:RealVal => { #processResult( #system( "wolframscript -c "
+                                                               +String Real2String(A)
+                                                               +String ">"
+                                                               +String Real2String(B)
+                                                               )
+                                                      )
+                                       }:>Bool
 endmodule
 ```
