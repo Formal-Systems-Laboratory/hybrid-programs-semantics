@@ -7,10 +7,11 @@ module REAL-SYNTAX
     imports BOOL-SYNTAX
     imports STRING-SYNTAX
     imports STRING
+    imports ID
 
     syntax RealVal ::= r"[0-9]+\\.[0-9]*"  [token, prefer, prec(1)]
 
-    syntax RealVar ::= "#RealVar" "(" String ")"
+    syntax RealVar ::= "#VarReal" "(" Id ")"
 
     syntax Real ::= RealVal
                   | RealVar
@@ -53,7 +54,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real
+                                      }:>Real    [anywhere]
 
     rule A:RealVal -Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                               +String Real2String(A)
@@ -61,7 +62,7 @@ module REAL
                                                               +String Real2String(B)
                                                               )
                                                      )
-                                     }:>Real
+                                     }:>Real    [anywhere]
 
     rule A:RealVal *Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                +String Real2String(A)
@@ -69,7 +70,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real
+                                      }:>Real    [anywhere]
 
     rule A:RealVal /Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                +String Real2String(A)
@@ -77,7 +78,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real
+                                      }:>Real    [anywhere]
 
     rule A:RealVal ^Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                +String Real2String(A)
@@ -85,7 +86,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real
+                                      }:>Real    [anywhere]
 
     rule A:RealVal ==Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                 +String Real2String(A)

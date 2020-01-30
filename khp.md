@@ -11,7 +11,9 @@ requires "wolframlanguage.k"
 module KHP-SYNTAX
     imports BOOL
     imports ID
+    imports INT
     imports REAL
+
 
     syntax AExp ::= Id | Real
                  | ( AExp )        [bracket]
@@ -100,11 +102,18 @@ module KHP
                   <pgmVars> .Ids </pgmVars>
                   <state> .Map </state>
                   <evolutionConditions> .Set </evolutionConditions>
+                  <counter> 0 </counter>
 
     rule #processMode(#regular) ~> P:Pgm => P
     rule #processMode(#constraintSynthesis) ~> P:Pgm => P ~> #synthesizeConstraints
 
     syntax KResult ::= Bool | Real
+
+    syntax RealVar ::= #freshVar(Id, Int)   [function]
+
+    rule #freshVar(ID, INT) => #VarReal(String2Id( Id2String(ID)
+                                                 +String Int2String(INT)))
+
 ```
 
 Hybrid Program states are maps from program variables to Reals.
@@ -112,11 +121,11 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ```{.k}
     rule <k> vars ( X:Id , L:VarDecls => L) ; _ ... </k>
-         <state> ... .Map => (X |-> ?INITIAL:Real) ... </state>
+         <state> ... .Map => (X |-> #VarReal(#prependStrToPgmVar("VAR_", X))) ... </state>
          <pgmVars> PGM_IDS => X, PGM_IDS </pgmVars>
          <evolutionConditions>
             ...
-            (.Set => SetItem(#appendStrToPgmVar(X, "_i") == ?INITIAL:Real))
+            (.Set => SetItem(#appendStrToPgmVar(X, "_i") == #VarReal(#prependStrToPgmVar("VAR_", X))))
             ...
          </evolutionConditions>
 
@@ -132,7 +141,8 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule <k> (X:Id := A:Real => .) ... </k>
          <state> ... X |-> (_ => A) ... </state>
     rule <k> (X:Id := * => .) ... </k>
-         <state> ... X |-> (_ => ?NONDET:Real) ... </state>
+         <state> ... X |-> (_ => #freshVar(X, I)) ... </state>
+         <counter> I:Int => I +Int 1 </counter>
 
     rule <k> X:Id => V ... </k>
          <state> ... (X |-> V) ... </state>
@@ -182,8 +192,10 @@ The differential dynamic logic continuous evolution rule is defined as -
 ```{.k}
 
     syntax Id ::= "#appendStrToPgmVar" "(" Id "," String ")"        [function]
+                | "#prependStrToPgmVar" "(" String "," Id ")"       [function]
 
     rule #appendStrToPgmVar(I:Id, S:String) => String2Id(Id2String(I) +String S)
+    rule #prependStrToPgmVar(S:String, I:Id) => String2Id(S +String Id2String(I))
 
     syntax ContBExp ::= "#renamePgmVars" "(" ContBExp ")"        [function]
 
@@ -205,8 +217,8 @@ The differential dynamic logic continuous evolution rule is defined as -
     syntax QuantifiedReal ::= "#quantified" "(" Real ")"
     syntax Trajectory ::= "#interval" "{" QuantifiedReal "," BExp "}" AExp
 
-    syntax Real ::= Trajectory
 
+    syntax AExp ::= Trajectory
     syntax KResult ::= Trajectory
 
     syntax Bool ::= Trajectory "<Trajectory" Exp
@@ -214,41 +226,48 @@ The differential dynamic logic continuous evolution rule is defined as -
                   | Trajectory "<=Trajectory" Exp
                   | Trajectory ">=Trajectory" Exp
 
-    rule T:Trajectory <=Real R:Real => T <=Trajectory R
-    rule T:Trajectory >=Real R:Real => T >=Trajectory R
-    rule T:Trajectory <Real R:Real => T <Trajectory R
-    rule T:Trajectory >Real R:Real => T >Trajectory R
+    rule T:Trajectory <= R:Real => T <=Trajectory R
+    rule T:Trajectory >= R:Real => T >=Trajectory R
+    rule T:Trajectory < R:Real => T <Trajectory R
+    rule T:Trajectory > R:Real => T >Trajectory R
 
     syntax KItem ::= "#intervalBoundary" "(" Real ")"
+                   | "#evolutionVariable" "(" Real ")"
+
     syntax FullFormExpression ::= "#toWolframExpression" "(" BExp ")" [function]
 
-    rule <k> X:Id ' = I:Real => #intervalBoundary(?T:Real) ... </k>
+    rule <k> X:Id ' = I:Real
+      =>   #evolutionVariable(#freshVar(String2Id("t_post") , COUNTER))
+        ~> #intervalBoundary(#VarReal(String2Id("t_post"))) ~> X ' = I
+           ...
+         </k>
+         <counter> COUNTER => COUNTER +Int 1 </counter>
+
+    rule <k>   #evolutionVariable(E_VAR)
+            ~> #intervalBoundary(BOUND) ~> X ' = I
+      =>   #intervalBoundary(BOUND)
+           ...
+         </k>
          <state> ...
-                (X |-> ( V => (V +Real (I *Real ?T:Real))))
-                (.Map =>  #appendStrToPgmVar(X, "_traj")
-                          |-> ( #interval { #quantified(?T2:Real)
-                                            , ({0.0}:>Real <=Real ?T2:Real) &&
-                                              (?T2:Real <=Real ?T:Real)
+                X |-> ( V => (V +Real (I *Real BOUND)) )
+                (.Map =>  (#appendStrToPgmVar(X, "_traj")
+                            |-> ( #interval { #quantified(E_VAR)
+                                            , ({0.0}:>Real <=Real E_VAR) &&
+                                              (E_VAR <=Real BOUND)
                                           }
-                                (V +Real (I *Real ?T2:Real))
-                              )
+                                (V +Real (I *Real E_VAR))
+                                )
+                           )
                 )
                 ...
          </state>
 
-    rule <k> #intervalBoundary(T) ~> X:Id ' = I:Real => #intervalBoundary(T) ... </k>
-         <state> ...
-                (X |-> ( V => (V +Real (I *Real T:Real))))
-                (.Map =>  #appendStrToPgmVar(X, "_traj")
-                          |-> ( #interval { #quantified(?T2:Real)
-                                          , ({0.0}:>Real <=Real ?T2:Real) &&
-                                            (?T2:Real <=Real T:Real)
-                                          }
-                                (V +Real (I *Real ?T2:Real))
-                              )
-                )
-                ...
-         </state>
+    rule <k> #intervalBoundary(#VarReal(VARNAME)) ~> X ' = I
+      =>       #evolutionVariable(#freshVar(VARNAME, COUNTER))
+            ~> #intervalBoundary(#VarReal(VARNAME)) ~> X ' = I
+           ...
+         </k>
+         <counter> COUNTER => COUNTER +Int 1 </counter>
 ```
 
 Mechanism to handle storing evolution conditions
@@ -272,7 +291,8 @@ Mechanism to handle storing evolution conditions
     syntax FullFormExpression ::= "#toWolframExpression" "(" Exp ")" [function]
 
     rule #toWolframExpression(X:Id) => X
-    rule #toWolframExpression(R:Real) => R
+    rule #toWolframExpression(R:RealVal) => R
+    rule #toWolframExpression(#VarReal(ID)) => ID
 
     rule #toWolframExpression(A && B) => And[ #toWolframExpression(A)
                                             , #toWolframExpression(B)]
@@ -292,7 +312,6 @@ Mechanism to handle storing evolution conditions
 
     rule #toWolframExpression(A +Real B) => Plus[ #toWolframExpression(A)
                                                 , #toWolframExpression(B)]
-                                                [concrete]
     rule #toWolframExpression(A -Real B) => Minus[ #toWolframExpression(A)
                                                  , #toWolframExpression(B)]
     rule #toWolframExpression(A *Real B) => Times[ #toWolframExpression(A)
@@ -347,16 +366,16 @@ Mechanism to handle storing evolution conditions
     rule <k> #synthesizeConstraints => #processEvolutionConstraints ~> #constraints(And[True]) </k>
 
     rule <k> #processEvolutionConstraints
-          ~> #constraints(And[E => (#toWolframExpression(B), E)]) </k>
+          ~> #constraints(And[E => #toWolframExpression(B), E]) </k>
          <evolutionConditions> ... (SetItem(B) => .Set) ...  </evolutionConditions>
 
     rule <k> #processEvolutionConstraints ~> CONSTRAINTS => #processFinalStateConstraints ~> CONSTRAINTS </k>
          <evolutionConditions> .Set </evolutionConditions>
 
     rule <k> #processFinalStateConstraints ~>
-             #constraints(And[E => (#toWolframExpression((HEAD == VAL)), E)]) </k>
+             #constraints(And[E => Equal[#toWolframExpression(HEAD), #toWolframExpression(VAL)], E]) </k>
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
-         <state> ... (ID |-> VAL) ... </state>
+         <state> ... (HEAD |-> VAL) ... </state>
 
     rule <k> #processFinalStateConstraints ~> CONSTRAINTS => CONSTRAINTS </k>
          <pgmVars> .Ids </pgmVars>
