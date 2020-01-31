@@ -87,6 +87,7 @@ module KHP
     imports KHP-SYNTAX
     imports MAP
     imports WOLFRAMLANGUAGE
+    imports K-IO
 
     syntax Mode ::= "#regular"
                   | "#constraintSynthesis"
@@ -377,7 +378,32 @@ Mechanism to handle storing evolution conditions
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
          <state> ... (HEAD |-> VAL) ... </state>
 
-    rule <k> #processFinalStateConstraints ~> CONSTRAINTS => CONSTRAINTS </k>
+    syntax K ::= "#wolframSystemCall.initialize" "(" String ")"
+                 | "#wolframSystemCall.error" "(" String ")"
+                 | "#wolframSystemCall.finalize"
+
+    syntax K ::= "#writeToFile.createFile" "(" String "," K ")"
+                   | "#writeToFile.doWrite" "(" String "," String "," Int "," K ")"
+                   | "#writeToFile.doClose" "(" String "," String "," K ")"
+                   | "#writeToFile.success" "(" String ")"
+                   | "#writeToFile.error" "(" String ")"
+
+    rule #wolframSystemCall.initialize(QUERY)
+      => #writeToFile.createFile(QUERY, #mkstemp("query.ws")) ~> #wolframSystemCall.finalize [concrete]
+
+    rule #writeToFile.createFile(QUERY, #tempFile(PATH, DESCRIPTOR))
+      => #writeToFile.doWrite(QUERY, PATH, DESCRIPTOR, #write(DESCRIPTOR, QUERY))
+
+    rule #writeToFile.doWrite(QUERY, PATH, DESCRIPTOR, _)
+      => #writeToFile.doClose(QUERY, PATH, #close(DESCRIPTOR))
+
+    rule #writeToFile.doClose(QUERY, PATH, _) => #writeToFile.success(PATH)
+
+    rule #writeToFile.success(PATH) ~> #wolframSystemCall.finalize
+      => #system("wolframscript -f " +String PATH)
+
+    rule <k> #processFinalStateConstraints ~> #constraints(WLFRAMEXPR)
+          => #toWolframExpressionString(WLFRAMEXPR) </k>
          <pgmVars> .Ids </pgmVars>
 endmodule
 ```
