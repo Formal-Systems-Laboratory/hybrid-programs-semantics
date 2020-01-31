@@ -13,8 +13,7 @@ module WOLFRAMLANGUAGE-SYNTAX
                                 | "True"    [token]
                                 | Operator "[" FullFormExpressions "]"
 
-    syntax FullFormExpressions ::= FullFormExpression
-                                 | FullFormExpressions "," FullFormExpressions [right]
+    syntax FullFormExpressions ::= List{FullFormExpression, ","}
 
     syntax Operator ::= "Plus"         [token]
                       | "Minus"        [token]
@@ -30,9 +29,9 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "Implies"      [token]
                       | "ForAll"       [token]
 
-    syntax String ::= "Operator2String" "(" Operator ")"                      [function, hook(STRING.token2string)]
-                    | "#toWolframExpressionString"    "(" FullFormExpression ")" [function]
-                    | "#toWolframExpressionStringAux" "(" FullFormExpressions ")" [function]
+    syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
+                    | "#toWolframExpressionString"    "(" FullFormExpression ")"    [function]
+                    | "#toWolframExpressionStringAux" "(" FullFormExpressions ")"   [function]
 
 endmodule
 
@@ -44,7 +43,10 @@ module WOLFRAMLANGUAGE
     rule #toWolframExpressionString(True) => "True"
 
     rule #toWolframExpressionStringAux(E1:FullFormExpression , E2:FullFormExpressions)
-      => #toWolframExpressionStringAux(E1) +String "," +String #toWolframExpressionString(E2)
+      => #toWolframExpressionString(E1) +String ", " +String #toWolframExpressionStringAux(E2)
+
+    rule #toWolframExpressionStringAux(E1:FullFormExpression, .FullFormExpressions)
+      => #toWolframExpressionString(E1)
 
     rule #toWolframExpressionString(OP:Operator [ EXPRS:FullFormExpressions ])
       => Operator2String(OP)
