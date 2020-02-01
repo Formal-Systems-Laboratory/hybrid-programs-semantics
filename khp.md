@@ -243,6 +243,8 @@ The differential dynamic logic continuous evolution rule is defined as -
            ...
          </k>
          <counter> COUNTER => COUNTER +Int 1 </counter>
+         <evolutionConditions> ...
+            (.Set => SetItem(#VarReal(String2Id("t_post")) >=Real 0.0)) ...  </evolutionConditions>
 
     rule <k>   #evolutionVariable(E_VAR)
             ~> #intervalBoundary(BOUND) ~> X ' = I
@@ -360,9 +362,10 @@ Mechanism to handle storing evolution conditions
                         ]
                ]
     syntax KItem ::= "#constraints" "(" FullFormExpression ")"
+                   | "#constraints" "(" String ")"
                    | "#processEvolutionConstraints"
                    | "#processFinalStateConstraints"
-
+                   | "#error"
 
     rule <k> #synthesizeConstraints => #processEvolutionConstraints ~> #constraints(And[True]) </k>
 
@@ -378,33 +381,19 @@ Mechanism to handle storing evolution conditions
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
          <state> ... (HEAD |-> VAL) ... </state>
 
-    syntax K ::= "#wolframSystemCall.initialize" "(" String ")"
-                 | "#wolframSystemCall.error" "(" String ")"
-                 | "#wolframSystemCall.finalize"
+    syntax KItem ::= "#wolfram.quantifierElimination" "(" FullFormExpression ")"    [function]
 
-    syntax K ::= "#writeToFile.createFile" "(" String "," K ")"
-                   | "#writeToFile.doWrite" "(" String "," String "," Int "," K ")"
-                   | "#writeToFile.doClose" "(" String "," String "," K ")"
-                   | "#writeToFile.success" "(" String ")"
-                   | "#writeToFile.error" "(" String ")"
-
-    rule #wolframSystemCall.initialize(QUERY)
-      => #writeToFile.createFile(QUERY, #mkstemp("query.ws")) ~> #wolframSystemCall.finalize [concrete]
-
-    rule #writeToFile.createFile(QUERY, #tempFile(PATH, DESCRIPTOR))
-      => #writeToFile.doWrite(QUERY, PATH, DESCRIPTOR, #write(DESCRIPTOR, QUERY))
-
-    rule #writeToFile.doWrite(QUERY, PATH, DESCRIPTOR, _)
-      => #writeToFile.doClose(QUERY, PATH, #close(DESCRIPTOR))
-
-    rule #writeToFile.doClose(QUERY, PATH, _) => #writeToFile.success(PATH)
-
-    rule #writeToFile.success(PATH) ~> #wolframSystemCall.finalize
-      => #system("wolframscript -f " +String PATH)
+    rule #wolfram.quantifierElimination( WLFRAMEXPR )
+      => #system("wolframscript -c" +String "\""
+                +String #toWolframExpressionString(Resolve[ WLFRAMEXPR, Reals ])
+                +String "\"")
 
     rule <k> #processFinalStateConstraints ~> #constraints(WLFRAMEXPR)
-          => #toWolframExpressionString(WLFRAMEXPR) </k>
+          => #wolfram.quantifierElimination(WLFRAMEXPR) </k>
          <pgmVars> .Ids </pgmVars>
+
+    rule #systemResult(0, EXPR, _) => #constraints(EXPR)
+
 endmodule
 ```
 

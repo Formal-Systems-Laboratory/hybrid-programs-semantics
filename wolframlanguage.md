@@ -11,6 +11,7 @@ module WOLFRAMLANGUAGE-SYNTAX
     syntax FullFormExpression ::= Id
                                 | Real
                                 | "True"    [token]
+                                | "Reals"   [token]
                                 | Operator "[" FullFormExpressions "]"
 
     syntax FullFormExpressions ::= List{FullFormExpression, ","}
@@ -28,6 +29,7 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "And"          [token]
                       | "Implies"      [token]
                       | "ForAll"       [token]
+                      | "Resolve"      [token]
 
     syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
                     | "#toWolframExpressionString"    "(" FullFormExpression ")"    [function]
@@ -41,6 +43,7 @@ module WOLFRAMLANGUAGE
     rule #toWolframExpressionString(ID:Id) => Id2String(ID)
     rule #toWolframExpressionString(REAL:Real) => Real2String(REAL)
     rule #toWolframExpressionString(True) => "True"
+    rule #toWolframExpressionString(Reals) => "Reals"
 
     rule #toWolframExpressionStringAux(E1:FullFormExpression , E2:FullFormExpressions)
       => #toWolframExpressionString(E1) +String ", " +String #toWolframExpressionStringAux(E2)

@@ -11,12 +11,12 @@ subprocess.check_call(['git', 'submodule', 'update', '--init', '--recursive'])
 extdir = 'ext'
 sys.path.append(os.path.join(os.path.dirname(__file__), extdir))
 
-from kninja import *
+from buildtools import KHPProject, KHPDefinition
 
 # Build
 # =====
 
-proj = KProject(extdir = extdir)
+proj = KHPProject(extdir = extdir)
 
 def build_khp(backend, alias, tangle_selector = '', flags = ''):
     return proj.definition( alias         = alias
@@ -33,13 +33,13 @@ khp_defn = build_khp(backend = 'java', alias = 'execution')
 # Testing
 # =======
 
-khp_defn.tests( glob = 't/execution/*.khp'
-              , alias = 'execution-tests'
-              , flags = '-cMODE=\"#regular\"')
+khp_defn.synthesis( glob = 't/constraint-synthesis/*.khp'
+                  , alias = 'synthesis-tests' )
 
-# khp_defn.tests( glob  = 't/constraint-synthesis/*.khp'
-#               , alias = 'synthesis-tests'
-#               , flags = '-cMODE=\"#synthesizeConstraints\"')
+
+khp_defn.tests( glob  = 't/execution/*.khp'
+              , alias = 'execution-tests'
+              , flags = '-cMODE=\"#regular\"' )
 
 # Main
 # ====

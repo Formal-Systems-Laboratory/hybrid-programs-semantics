@@ -2,11 +2,15 @@
 
 extdir = 'ext'
 import sys
+import subprocess
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), extdir))
+from buildtools import KHPRunner
 from kninja.runner import *
 
 proj = KProject(extdir = extdir)
+
+directory = proj.builddir('defn/execution')
 
 KDefinition( proj
            , alias = 'execution'
@@ -14,10 +18,10 @@ KDefinition( proj
            , directory = proj.builddir('defn/execution')
            )
 
-KDefinition( proj
-           , alias = 'synthesis'
-           , backend = 'java'
-           , directory = proj.builddir('defn/synthesis')
-           )
+# KHPDefinition( proj
+#              , alias = 'synthesis'
+#              , backend = 'java'
+#              , directory = proj.builddir('defn/synthesis')
+#              )
 
-KRunner(proj).main()
+KHPRunner(proj).main()
