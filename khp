@@ -14,4 +14,10 @@ KDefinition( proj
            , directory = proj.builddir('defn/execution')
            )
 
+KDefinition( proj
+           , alias = 'synthesis'
+           , backend = 'java'
+           , directory = proj.builddir('defn/synthesis')
+           )
+
 KRunner(proj).main()
