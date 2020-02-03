@@ -2,10 +2,16 @@
   <k>
     .
   </k>
+  <pgmVars>
+    a , .Ids
+  </pgmVars>
   <state>
-    a |-> 7.
+    a |-> 1.0 +Real 6.
   </state>
   <evolutionConditions>
-    .Set
+    SetItem ( a_i == #VarReal ( VAR_a ) )
   </evolutionConditions>
+  <counter>
+    0
+  </counter>
 </generatedTop>

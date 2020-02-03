@@ -2,11 +2,18 @@
   <k>
     .
   </k>
+  <pgmVars>
+    b , a , .Ids
+  </pgmVars>
   <state>
-    a |-> V0 +Real 1.0
-    b |-> ( V0 +Real 1.0 ) *Real 2.0
+    a |-> #VarReal ( VAR_a ) +Real 1.0
+    b |-> ( #VarReal ( VAR_a ) +Real 1.0 ) *Real 2.0
   </state>
   <evolutionConditions>
-    .Set
+    SetItem ( a_i == #VarReal ( VAR_a ) )
+    SetItem ( b_i == #VarReal ( VAR_b ) )
   </evolutionConditions>
+  <counter>
+    0
+  </counter>
 </generatedTop>

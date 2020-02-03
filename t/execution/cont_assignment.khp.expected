@@ -2,16 +2,27 @@
   <k>
     .
   </k>
+  <pgmVars>
+    ep , t , f , x , .Ids
+  </pgmVars>
   <state>
     ep |-> 5.0
-    f |-> V0
-    t |-> 0.0 +Real 1.0 *Real V1
-    t_traj |-> #interval { ( 0.0 <= V2 ) && V2 <= V1 } ( 0.0 +Real 1.0 *Real V2 )
-    x |-> V3 +Real V0 *Real V1
-    x_traj |-> #interval { ( 0.0 <= V4 ) && V4 <= V1 } ( V3 +Real V0 *Real V4 )
+    f |-> #VarReal ( f0 )
+    t |-> 0.0 +Real 1.0 *Real #VarReal ( t_post )
+    t_traj |-> #interval { #quantified ( #VarReal ( t_post2 ) ) , 0.0 <=Real #VarReal ( t_post2 ) && #VarReal ( t_post2 ) <=Real #VarReal ( t_post ) } 0.0 +Real 1.0 *Real #VarReal ( t_post2 )
+    x |-> #VarReal ( VAR_x ) +Real #VarReal ( f0 ) *Real #VarReal ( t_post )
+    x_traj |-> #interval { #quantified ( #VarReal ( t_post1 ) ) , 0.0 <=Real #VarReal ( t_post1 ) && #VarReal ( t_post1 ) <=Real #VarReal ( t_post ) } #VarReal ( VAR_x ) +Real #VarReal ( f0 ) *Real #VarReal ( t_post1 )
   </state>
   <evolutionConditions>
-    SetItem ( #interval { ( 0.0 <= V4 ) && V4 <= V1 } ( V3 +Real V0 *Real V4 ) >=Real 0.0 )
-    SetItem ( #interval { ( 0.0 <= V2 ) && V2 <= V1 } ( 0.0 +Real 1.0 *Real V2 ) <=Real 5.0 )
+    SetItem ( #VarReal ( t_post ) >=Real 0.0 )
+    SetItem ( #interval { #quantified ( #VarReal ( t_post1 ) ) , 0.0 <=Real #VarReal ( t_post1 ) && #VarReal ( t_post1 ) <=Real #VarReal ( t_post ) } #VarReal ( VAR_x ) +Real #VarReal ( f0 ) *Real #VarReal ( t_post1 ) >=Trajectory 0.0 )
+    SetItem ( #interval { #quantified ( #VarReal ( t_post2 ) ) , 0.0 <=Real #VarReal ( t_post2 ) && #VarReal ( t_post2 ) <=Real #VarReal ( t_post ) } 0.0 +Real 1.0 *Real #VarReal ( t_post2 ) <=Trajectory 5.0 )
+    SetItem ( ep_i == #VarReal ( VAR_ep ) )
+    SetItem ( f_i == #VarReal ( VAR_f ) )
+    SetItem ( t_i == #VarReal ( VAR_t ) )
+    SetItem ( x_i == #VarReal ( VAR_x ) )
   </evolutionConditions>
+  <counter>
+    3
+  </counter>
 </generatedTop>

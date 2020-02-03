@@ -6,13 +6,12 @@
     a , .Ids
   </pgmVars>
   <state>
-    a |-> 3.0
+    a |-> #VarReal ( a0 )
   </state>
   <evolutionConditions>
-    SetItem ( #VarReal ( VAR_a ) >Real 2.0 )
     SetItem ( a_i == #VarReal ( VAR_a ) )
   </evolutionConditions>
   <counter>
-    0
+    1
   </counter>
 </generatedTop>
