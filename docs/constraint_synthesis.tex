@@ -1,0 +1,61 @@
+\documentclass[11pt]{article}
+\setlength{\parindent}{0pt}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb, dirtytalk}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+\begin{document}
+
+\newcommand{\cell}[2]{\langle #1 \rangle_{\text{#2}}}
+\newcommand{\post}[1]{#1^{+}}
+\newcommand{\vars}[1]{\textit{Vars}(#1)}
+\newcommand{\startConfig}{\varphi_{\textit{start}}}
+\newcommand{\postConfig}{\varphi_{\textit{post}}}
+\newcommand{\axioms}{\mathcal{A}}
+\newcommand{\circularities}{\mathcal{C}}
+\newcommand{\postSymbolicConfig}{\varphi^{\textit{sym}}_{\textit{post}}}
+
+\begin{section}{Problem Description}
+
+Given a hybrid Program $\alpha$, we synthesis
+a formula $\theta$, such that for any two
+successive states $s_a, s_b \in \rho(\alpha)$,
+if $s_a, s_b \vDash \theta$ then the following
+reachability claim holds -
+
+$$ \{\axioms,\circularities\} \vdash \cell{\alpha}{k} \cell{s_a}{state} \Rightarrow_{\exists} \cell{.}{k}
+\cell{s_b}{state} $$.
+
+where we say $(s_a, s_b) \vDash \theta$ iff $\theta[s_a(v) / V, s_b(v) / \post{V}]$
+for each $v \in \vars{\alpha}$.
+
+\begin{subsection}{Constraint Synthesis Approach}
+
+Given a Hybrid Program $\alpha$, we say $\startConfig$ is a configuration
+of the form $\cell{\alpha}{k} \cell{v \mapsto V}{state}$ and $\postConfig$
+is a configuration of the form $\cell{.}{k} \cell{v \mapsto \post{V}}{state}$
+for each $v \in \vars{\alpha}$, where
+$V, \post{V}$ are \textit{Real} valued variables.
+
+\theoremstyle{definition}
+    \begin{definition}
+    For any Hybrid Program $\alpha^*$, let
+    $\cell{\alpha}{k} \cell{v \mapsto V}{state}$ be the
+    \say{symbolic} start configuration and $\postSymbolicConfig$
+    is the configuration at the end of symbolic execution, is
+    a configuration of the form $\cell{.}{k} \cell{v \mapsto \tau_{v}}{state}$
+    where $\tau_v$ is a Formula over Reals.
+    Then,
+    $$
+        \{\mathcal{A}, \mathcal{C}\} \vdash \startConfig
+        \Rightarrow_{\exists} \postSymbolicConfig
+    $$
+    \end{definition}
+
+
+\end{subsection}
+\end{section}
+
+\end{document}
