@@ -23,13 +23,13 @@ module KHP-SYNTAX
                  | AExp "-" AExp   [strict, left]
 
     syntax BExp ::= Bool
-                  | ( BExp )        [bracket]
                   | AExp ">" AExp   [strict]
                   | AExp "<" AExp   [strict]
                   | AExp ">=" AExp  [strict]
                   | AExp "==" AExp  [strict]
                   | AExp "<=" AExp  [strict]
-                  | BExp "&&" BExp  [strict]
+                  > BExp "&&" BExp  [strict]
+                  > ( BExp )        [bracket]
 
     syntax Exp ::= AExp
                  > BExp
@@ -63,6 +63,7 @@ module KHP-SYNTAX
 
 A Hybrid Program is represented as following -
  - vars `<Variables Declarations> ; <Pgm>`
+ - params `[Pameter Declarations] ; vars <Variables Declarations> ; <Pgm>`
 
 where `Variable Declarations` are program variables
 in the Hybrid Program.
@@ -71,8 +72,16 @@ in the Hybrid Program.
     syntax VarDecl ::= Id
                      | Id "&" BExp
 
-    syntax VarDecls ::= List{VarDecl, ","}
-    syntax Pgm ::= "vars" VarDecls ";"  Stmts
+
+    //Todo: Params are not necessarily variables
+
+    syntax Decls ::= List{VarDecl, ","}
+
+    syntax VarDecls ::= "vars" Decls
+    syntax ParamDecls ::= "params" Decls
+
+    syntax Pgm ::= VarDecls ";"  Stmts
+                 | ParamDecls ";" VarDecls ";" Stmts
 
 endmodule
 ```
@@ -121,7 +130,12 @@ Hybrid Program states are maps from program variables to Reals.
 For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ```{.k}
-    rule <k> vars ( X:Id , L:VarDecls => L) ; _ ... </k>
+    rule <k> params ( X:Id , L:Decls => L) ; _ ; _ ... </k>
+         <state> ... .Map => (X |-> #VarReal(#prependStrToPgmVar("PARAM_", X))) ... </state>
+
+         rule params .Decls ; VARDECLS ; S:Stmts => VARDECLS ; S
+
+    rule <k> vars ( X:Id , L:Decls => L) ; _ ... </k>
          <state> ... .Map => (X |-> #VarReal(#prependStrToPgmVar("VAR_", X))) ... </state>
          <pgmVars> PGM_IDS => X, PGM_IDS </pgmVars>
          <evolutionConditions>
@@ -130,7 +144,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
             ...
          </evolutionConditions>
 
-    rule vars .VarDecls ; S:Stmts => S
+    rule vars .Decls ; S:Stmts => S
     syntax FullFormExpression ::= "#toWolframExpression" "(" BExp ")" [function]
 
     rule E1:Stmt ; E2:Stmts => E1 ~> E2

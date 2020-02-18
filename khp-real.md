@@ -9,7 +9,7 @@ module REAL-SYNTAX
     imports STRING
     imports ID
 
-    syntax RealVal ::= r"[0-9]+\\.[0-9]*"  [token, prefer, prec(1)]
+    syntax RealVal ::= r"[\\+-]?[0-9]+\\.[0-9]*"  [token, prefer, prec(1)]
 
     syntax RealVar ::= "#VarReal" "(" Id ")"
 
