@@ -170,6 +170,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 ```{.k}
     rule A:Real * B:Real => A *Real B
     rule A:Real + B:Real => A +Real B
+    rule A:Real - B:Real => A -Real B
 
     rule A:Real > B:Real => A >Real B
     rule A:Real < B:Real => A <Real B
