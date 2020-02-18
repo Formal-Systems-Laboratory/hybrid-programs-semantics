@@ -1,0 +1,2 @@
+params m, ep ; vars f, l, c ;f :=* ; ?(-1.0 <= f && f <= (m-l)/ep) ; c := 0.0 ;
+l' = f, c' = 1.0 & l >= 0.0 , c <= ep

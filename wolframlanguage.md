@@ -18,6 +18,7 @@ module WOLFRAMLANGUAGE-SYNTAX
 
     syntax Operator ::= "Plus"         [token]
                       | "Minus"        [token]
+                      | "Subtract"     [token]
                       | "Times"        [token]
                       | "Divide"       [token]
                       | "Exponent"     [token]

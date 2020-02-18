@@ -333,8 +333,8 @@ Mechanism to handle storing evolution conditions
 
     rule #toWolframExpression(A +Real B) => Plus[ #toWolframExpression(A)
                                                 , #toWolframExpression(B)]
-    rule #toWolframExpression(A -Real B) => Minus[ #toWolframExpression(A)
-                                                 , #toWolframExpression(B)]
+    rule #toWolframExpression(A -Real B) => Subtract[ #toWolframExpression(A)
+                                                    , #toWolframExpression(B)]
     rule #toWolframExpression(A *Real B) => Times[ #toWolframExpression(A)
                                                  , #toWolframExpression(B)]
     rule #toWolframExpression(A /Real B) => Divide[ #toWolframExpression(A)

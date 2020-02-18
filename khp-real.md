@@ -54,7 +54,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real    [anywhere]
+                                      }:>Real
 
     rule A:RealVal -Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                               +String Real2String(A)
@@ -62,7 +62,7 @@ module REAL
                                                               +String Real2String(B)
                                                               )
                                                      )
-                                     }:>Real    [anywhere]
+                                     }:>Real
 
     rule A:RealVal *Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                +String Real2String(A)
@@ -70,7 +70,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real    [anywhere]
+                                      }:>Real
 
     rule A:RealVal /Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                +String Real2String(A)
@@ -78,7 +78,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real    [anywhere]
+                                      }:>Real
 
     rule A:RealVal ^Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                +String Real2String(A)
@@ -86,7 +86,7 @@ module REAL
                                                                +String Real2String(B)
                                                                )
                                                       )
-                                      }:>Real    [anywhere]
+                                      }:>Real
 
     rule A:RealVal ==Real B:RealVal => { #processResult( #system( "wolframscript -c "
                                                                 +String Real2String(A)
