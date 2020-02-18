@@ -318,6 +318,8 @@ Mechanism to handle storing evolution conditions
     rule #toWolframExpression(A == B) => Equal[ #toWolframExpression(A)
                                               , #toWolframExpression(B)]
 
+    rule #toWolframExpression(A andBool B) => And[ #toWolframExpression(A)
+                                                 , #toWolframExpression(B)]
     rule #toWolframExpression(A ==Real B) => Equal[ #toWolframExpression(A)
                                                   , #toWolframExpression(B)]
     rule #toWolframExpression(A <=Real B) => LessEqual[ #toWolframExpression(A)
@@ -397,7 +399,7 @@ Mechanism to handle storing evolution conditions
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
          <state> ... (HEAD |-> VAL) ... </state>
 
-    syntax KItem ::= "#wolfram.quantifierElimination" "(" FullFormExpression ")"    [function]
+    syntax KItem ::= "#wolfram.quantifierElimination" "(" FullFormExpression ")"
 
     rule #wolfram.quantifierElimination( WLFRAMEXPR )
       => #system("wolframscript -c" +String "\""
