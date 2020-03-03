@@ -204,10 +204,9 @@ The differential dynamic logic continuous evolution rule is defined as -
     1. S(T) satisfies B
     2. S(0) = X_Initial
     3. V 0 <= t <= T . S(t) satisfies B
-    4. V 0 < t < T . S'(t) = f
+    4. V 0 < t < T . S'(t) = f and T' = 1
 
 ```{.k}
-
     syntax Id ::= "#appendStrToPgmVar" "(" Id "," String ")"        [function]
                 | "#prependStrToPgmVar" "(" String "," Id ")"       [function]
 
@@ -228,6 +227,9 @@ The differential dynamic logic continuous evolution rule is defined as -
 ```
 
 ### Linear Solutions
+
+An inequality over a trajectory holds
+when all points in the trajectory respect it.
 
 ```{.k}
 
@@ -252,6 +254,32 @@ The differential dynamic logic continuous evolution rule is defined as -
                    | "#evolutionVariable" "(" Real ")"
 
     syntax FullFormExpression ::= "#toWolframExpression" "(" BExp ")" [function]
+```
+
+In order to give the semantics to a continuous evolution
+of the form `X ' = I`, where I is a constrant or a symbolic
+real-valued variable, we need to take the following steps -
+
+ 1) `X ' = I` desribes how one particular program state-variable
+     evolves w.r.t. time. Time however is shared across
+     evolutions of all program variables of the continuous evolution
+     statement. For instance, if we have `x' = a, y' = b & BOUNDARY`,
+     then there exists some `T >= 0` such that `x := sol_x(T), y := sol_y(T)`
+     where `sol_x` and `sol_y` are the solutions of the differential
+     equations for `x, y` respectively.
+
+ 2) Thus, in order to give semantics to `X' = I`, we first need
+    an `boundary (T)` and an `evolution variable (t)`, which
+    gives to `X := \exists (T >= 0) . sol_x(T)` and
+    `X_traj := #interval{ }(DE-Solution)`.
+    which can be interpreted as the trajectory of `X` is bound to
+    a solution of the differential equation.
+
+Note the bound for continuous evolution is instantiated with
+a real valued variable `t_post`. This operation corresponds
+to the skolemization proof rule in differential dynamic logic.
+
+```{.k}
 
     rule <k> X:Id ' = I:Real
       =>   #evolutionVariable(#freshVar(String2Id("t_post") , COUNTER))
