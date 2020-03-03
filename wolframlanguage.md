@@ -31,30 +31,32 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "Implies"      [token]
                       | "ForAll"       [token]
                       | "Resolve"      [token]
+                      | "Echo"         [token]
+                      | "FullForm"     [token]
 
     syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
-                    | "#toWolframExpressionString"    "(" FullFormExpression ")"    [function]
-                    | "#toWolframExpressionStringAux" "(" FullFormExpressions ")"   [function]
+                    | "#wolfram.expressionToString"    "(" FullFormExpression ")"   [function]
+                    | "#wolfram.expressionToStringAux" "(" FullFormExpressions ")"  [function]
 
 endmodule
 
 module WOLFRAMLANGUAGE
     imports WOLFRAMLANGUAGE-SYNTAX
 
-    rule #toWolframExpressionString(ID:Id) => Id2String(ID)
-    rule #toWolframExpressionString(REAL:Real) => Real2String(REAL)
-    rule #toWolframExpressionString(True) => "True"
-    rule #toWolframExpressionString(Reals) => "Reals"
+    rule #wolfram.expressionToString(ID:Id) => Id2String(ID)
+    rule #wolfram.expressionToString(REAL:Real) => Real2String(REAL)
+    rule #wolfram.expressionToString(True) => "True"
+    rule #wolfram.expressionToString(Reals) => "Reals"
 
-    rule #toWolframExpressionStringAux(E1:FullFormExpression , E2:FullFormExpressions)
-      => #toWolframExpressionString(E1) +String ", " +String #toWolframExpressionStringAux(E2)
+    rule #wolfram.expressionToStringAux(E1:FullFormExpression , E2:FullFormExpressions)
+      => #wolfram.expressionToString(E1) +String ", " +String #wolfram.expressionToStringAux(E2)
 
-    rule #toWolframExpressionStringAux(E1:FullFormExpression, .FullFormExpressions)
-      => #toWolframExpressionString(E1)
+    rule #wolfram.expressionToStringAux(E1:FullFormExpression, .FullFormExpressions)
+      => #wolfram.expressionToString(E1)
 
-    rule #toWolframExpressionString(OP:Operator [ EXPRS:FullFormExpressions ])
+    rule #wolfram.expressionToString(OP:Operator [ EXPRS:FullFormExpressions ])
       => Operator2String(OP)
-         +String "[" +String #toWolframExpressionStringAux(EXPRS) +String "]"
+         +String "[" +String #wolfram.expressionToStringAux(EXPRS) +String "]"
 
 endmodule
 

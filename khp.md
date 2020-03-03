@@ -427,18 +427,31 @@ Mechanism to handle storing evolution conditions
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
          <state> ... (HEAD |-> VAL) ... </state>
 
-    syntax KItem ::= "#wolfram.quantifierElimination" "(" FullFormExpression ")"
 
-    rule #wolfram.quantifierElimination( WLFRAMEXPR )
-      => #system("wolframscript -c" +String "\""
-                +String #toWolframExpressionString(Resolve[ WLFRAMEXPR, Reals ])
-                +String "\"")
+    syntax KItem ::= "#wolfram.open"  "(" String "," IOFile ")"
+                   | "#wolfram.write" "(" K "," String "," Int ")"
+                   | "#wolfram.close" "(" String "," K ")"
+                   | "#wolfram.launch" "(" String ")"
+                   | "#wolfram.result" "(" KItem ")"
 
     rule <k> #processFinalStateConstraints ~> #constraints(WLFRAMEXPR)
-          => #wolfram.quantifierElimination(WLFRAMEXPR) </k>
+          => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
+                          , #mkstemp("query_XXXXXX")
+                          ) </k>
          <pgmVars> .Ids </pgmVars>
 
-    rule #systemResult(0, EXPR, _) => #constraints(EXPR)
+    rule #wolfram.open(QUERY, #tempFile(FNAME, FD))
+      => #wolfram.write(#write(FD, QUERY), FNAME, FD)
+
+    rule #wolfram.write(_, FNAME, FD)
+      => #wolfram.close(FNAME, #close(FD))
+
+    rule #wolfram.close(FNAME, _) => #wolfram.launch(FNAME)
+
+    rule #wolfram.launch( FNAME )
+      => #wolfram.result(#system("wolframscript -print -f " +String FNAME))
+
+    rule #wolfram.result(#systemResult(0, EXPR, _)) => #constraints(EXPR)
 
 endmodule
 ```
