@@ -33,6 +33,7 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "Resolve"      [token]
                       | "Echo"         [token]
                       | "FullForm"     [token]
+		      | "Exists"       [token]
 
     syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
                     | "#wolfram.expressionToString"    "(" FullFormExpression ")"   [function]

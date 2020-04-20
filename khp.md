@@ -112,6 +112,7 @@ module KHP
                   <pgmVars> .Ids </pgmVars>
                   <state> .Map </state>
                   <evolutionConditions> .Set </evolutionConditions>
+                  <nonDetAssignments> .Map </nonDetAssignments>
                   <counter> 0 </counter>
 
     rule #processMode(#regular) ~> P:Pgm => P
@@ -131,18 +132,13 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
 ```{.k}
     rule <k> params ( X:Id , L:Decls => L) ; _ ; _ ... </k>
-         <state> ... .Map => (X |-> #VarReal(#prependStrToPgmVar("PARAM_", X))) ... </state>
+         <state> ... .Map => (X |-> #VarReal(X)) ... </state>
 
          rule params .Decls ; VARDECLS ; S:Stmts => VARDECLS ; S
 
     rule <k> vars ( X:Id , L:Decls => L) ; _ ... </k>
-         <state> ... .Map => (X |-> #VarReal(#prependStrToPgmVar("VAR_", X))) ... </state>
+         <state> ... .Map => (X |-> #VarReal(X)) ... </state>
          <pgmVars> PGM_IDS => X, PGM_IDS </pgmVars>
-         <evolutionConditions>
-            ...
-            (.Set => SetItem(#appendStrToPgmVar(X, "_i") == #VarReal(#prependStrToPgmVar("VAR_", X))))
-            ...
-         </evolutionConditions>
 
     rule vars .Decls ; S:Stmts => S
     syntax FullFormExpression ::= "#toWolframExpression" "(" BExp ")" [function]
@@ -158,6 +154,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule <k> (X:Id := * => .) ... </k>
          <state> ... X |-> (_ => #freshVar(X, I)) ... </state>
          <counter> I:Int => I +Int 1 </counter>
+         <nonDetAssignments> ... (.Map => (X |-> #freshVar(X, I))) ...  </nonDetAssignments>
 
     rule <k> X:Id => V ... </k>
          <state> ... (X |-> V) ... </state>
@@ -282,13 +279,13 @@ to the skolemization proof rule in differential dynamic logic.
 ```{.k}
 
     rule <k> X:Id ' = I:Real
-      =>   #evolutionVariable(#freshVar(String2Id("t_post") , COUNTER))
-        ~> #intervalBoundary(#VarReal(String2Id("t_post"))) ~> X ' = I
+      =>   #evolutionVariable(#freshVar(String2Id("tpost") , COUNTER))
+        ~> #intervalBoundary(#VarReal(String2Id("tpost"))) ~> X ' = I
            ...
          </k>
          <counter> COUNTER => COUNTER +Int 1 </counter>
          <evolutionConditions> ...
-            (.Set => SetItem(#VarReal(String2Id("t_post")) >=Real 0.0)) ...  </evolutionConditions>
+            (.Set => SetItem(#VarReal(String2Id("tpost")) >=Real 0.0)) ...  </evolutionConditions>
 
     rule <k>   #evolutionVariable(E_VAR)
             ~> #intervalBoundary(BOUND) ~> X ' = I
@@ -371,46 +368,45 @@ Mechanism to handle storing evolution conditions
     rule #toWolframExpression( #interval { #quantified(VAR) , CONSTRAINT }
                                     EVOLUTION >=Trajectory DOMAIN )
       => ForAll[ #toWolframExpression(VAR)
-               , Implies[ #toWolframExpression(CONSTRAINT)
-                        , GreaterEqual[ #toWolframExpression(EVOLUTION)
-                                      , #toWolframExpression(DOMAIN)
-                                      ]
-                        ]
-               ]
+               , #toWolframExpression(CONSTRAINT)
+               , GreaterEqual[ #toWolframExpression(EVOLUTION)
+               		     , #toWolframExpression(DOMAIN)
+                             ]
+	      ]
 
     rule #toWolframExpression( #interval { #quantified(VAR) , CONSTRAINT }
                                     EVOLUTION <=Trajectory DOMAIN )
       => ForAll[ #toWolframExpression(VAR)
-               , Implies[ #toWolframExpression(CONSTRAINT)
-                        , LessEqual[ #toWolframExpression(EVOLUTION)
-                                   , #toWolframExpression(DOMAIN)
-                                   ]
-                        ]
-               ]
+               , #toWolframExpression(CONSTRAINT)
+               , LessEqual[ #toWolframExpression(EVOLUTION)
+               	          , #toWolframExpression(DOMAIN)
+                          ]
+	       ]
+
 
     rule #toWolframExpression( #interval { #quantified(VAR) , CONSTRAINT }
                                     EVOLUTION <Trajectory DOMAIN )
       => ForAll[ #toWolframExpression(VAR)
-               , Implies[ #toWolframExpression(CONSTRAINT)
-                        , Less[ #toWolframExpression(EVOLUTION)
-                              , #toWolframExpression(DOMAIN)
-                              ]
-                        ]
-               ]
+               , #toWolframExpression(CONSTRAINT)
+               , Less[ #toWolframExpression(EVOLUTION)
+               	     , #toWolframExpression(DOMAIN)
+                     ]
+	       ]
 
     rule #toWolframExpression( #interval { #quantified(VAR) , CONSTRAINT }
                                     EVOLUTION >Trajectory DOMAIN )
       => ForAll[ #toWolframExpression(VAR)
-               , Implies[ #toWolframExpression(CONSTRAINT)
-                        , Greater[ #toWolframExpression(EVOLUTION)
-                                 , #toWolframExpression(DOMAIN)
-                                 ]
+               , #toWolframExpression(CONSTRAINT)
+               , Greater[ #toWolframExpression(EVOLUTION)
+               	        , #toWolframExpression(DOMAIN)
                         ]
-               ]
+	       ]
+
     syntax KItem ::= "#constraints" "(" FullFormExpression ")"
                    | "#constraints" "(" String ")"
                    | "#processEvolutionConstraints"
                    | "#processFinalStateConstraints"
+                   | "#processNonDetAssignments"
                    | "#error"
 
     rule <k> #synthesizeConstraints => #processEvolutionConstraints ~> #constraints(And[True]) </k>
@@ -422,11 +418,26 @@ Mechanism to handle storing evolution conditions
     rule <k> #processEvolutionConstraints ~> CONSTRAINTS => #processFinalStateConstraints ~> CONSTRAINTS </k>
          <evolutionConditions> .Set </evolutionConditions>
 
-    rule <k> #processFinalStateConstraints ~>
-             #constraints(And[E => Equal[#toWolframExpression(HEAD), #toWolframExpression(VAL)], E]) </k>
+    rule <k> #processFinalStateConstraints
+          ~> #constraints(And[ E => Equal[ #toWolframExpression(#appendStrToPgmVar(HEAD, "post"))
+                                         , #toWolframExpression(VAL)
+                                         ] , E ]) </k>
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
          <state> ... (HEAD |-> VAL) ... </state>
 
+    rule <k> #processNonDetAssignments ~>
+             #constraints((E => Exists[#toWolframExpression(V), E])) </k>
+         <nonDetAssignments> ... ((X |-> V) => .Map) ... </nonDetAssignments>
+
+    rule <k> #processNonDetAssignments ~> #constraints(WLFRAMEXPR)
+          => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
+                          , #mkstemp("query_XXXXXX")
+                          ) </k>
+         <nonDetAssignments> .Map </nonDetAssignments>
+
+
+    rule <k> #processFinalStateConstraints => #processNonDetAssignments ... </k>
+         <pgmVars> .Ids </pgmVars>
 
     syntax KItem ::= "#wolfram.open"  "(" String "," IOFile ")"
                    | "#wolfram.write" "(" K "," String "," Int ")"
@@ -434,11 +445,6 @@ Mechanism to handle storing evolution conditions
                    | "#wolfram.launch" "(" String ")"
                    | "#wolfram.result" "(" KItem ")"
 
-    rule <k> #processFinalStateConstraints ~> #constraints(WLFRAMEXPR)
-          => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
-                          , #mkstemp("query_XXXXXX")
-                          ) </k>
-         <pgmVars> .Ids </pgmVars>
 
     rule #wolfram.open(QUERY, #tempFile(FNAME, FD))
       => #wolfram.write(#write(FD, QUERY), FNAME, FD)
