@@ -9,8 +9,11 @@
     a |-> 1.0 +Real 6.
   </state>
   <evolutionConditions>
-    SetItem ( a_i == #VarReal ( VAR_a ) )
+    .Set
   </evolutionConditions>
+  <nonDetAssignments>
+    .Map
+  </nonDetAssignments>
   <counter>
     0
   </counter>

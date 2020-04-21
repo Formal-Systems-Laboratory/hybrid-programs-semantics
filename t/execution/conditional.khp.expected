@@ -9,9 +9,11 @@
     a |-> 3.0
   </state>
   <evolutionConditions>
-    SetItem ( #VarReal ( VAR_a ) >Real 2.0 )
-    SetItem ( a_i == #VarReal ( VAR_a ) )
+    SetItem ( #VarReal ( a ) >Real 2.0 )
   </evolutionConditions>
+  <nonDetAssignments>
+    .Map
+  </nonDetAssignments>
   <counter>
     0
   </counter>

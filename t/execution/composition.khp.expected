@@ -6,13 +6,15 @@
     b , a , .Ids
   </pgmVars>
   <state>
-    a |-> #VarReal ( VAR_a ) +Real 1.0
-    b |-> ( #VarReal ( VAR_a ) +Real 1.0 ) *Real 2.0
+    a |-> #VarReal ( a ) +Real 1.0
+    b |-> ( #VarReal ( a ) +Real 1.0 ) *Real 2.0
   </state>
   <evolutionConditions>
-    SetItem ( a_i == #VarReal ( VAR_a ) )
-    SetItem ( b_i == #VarReal ( VAR_b ) )
+    .Set
   </evolutionConditions>
+  <nonDetAssignments>
+    .Map
+  </nonDetAssignments>
   <counter>
     0
   </counter>

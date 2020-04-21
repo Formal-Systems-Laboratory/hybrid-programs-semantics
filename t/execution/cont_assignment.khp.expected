@@ -8,20 +8,19 @@
   <state>
     ep |-> 5.0
     f |-> #VarReal ( f0 )
-    t |-> 0.0 +Real 1.0 *Real #VarReal ( t_post )
-    t_traj |-> #interval { #quantified ( #VarReal ( t_post2 ) ) , 0.0 <=Real #VarReal ( t_post2 ) && #VarReal ( t_post2 ) <=Real #VarReal ( t_post ) } 0.0 +Real 1.0 *Real #VarReal ( t_post2 )
-    x |-> #VarReal ( VAR_x ) +Real #VarReal ( f0 ) *Real #VarReal ( t_post )
-    x_traj |-> #interval { #quantified ( #VarReal ( t_post1 ) ) , 0.0 <=Real #VarReal ( t_post1 ) && #VarReal ( t_post1 ) <=Real #VarReal ( t_post ) } #VarReal ( VAR_x ) +Real #VarReal ( f0 ) *Real #VarReal ( t_post1 )
+    t |-> 0.0 +Real 1.0 *Real #VarReal ( tpost )
+    t_traj |-> #interval { #quantified ( #VarReal ( tpost2 ) ) , 0.0 <=Real #VarReal ( tpost2 ) && #VarReal ( tpost2 ) <=Real #VarReal ( tpost ) } 0.0 +Real 1.0 *Real #VarReal ( tpost2 )
+    x |-> #VarReal ( x ) +Real #VarReal ( f0 ) *Real #VarReal ( tpost )
+    x_traj |-> #interval { #quantified ( #VarReal ( tpost1 ) ) , 0.0 <=Real #VarReal ( tpost1 ) && #VarReal ( tpost1 ) <=Real #VarReal ( tpost ) } #VarReal ( x ) +Real #VarReal ( f0 ) *Real #VarReal ( tpost1 )
   </state>
   <evolutionConditions>
-    SetItem ( #VarReal ( t_post ) >=Real 0.0 )
-    SetItem ( #interval { #quantified ( #VarReal ( t_post1 ) ) , 0.0 <=Real #VarReal ( t_post1 ) && #VarReal ( t_post1 ) <=Real #VarReal ( t_post ) } #VarReal ( VAR_x ) +Real #VarReal ( f0 ) *Real #VarReal ( t_post1 ) >=Trajectory 0.0 )
-    SetItem ( #interval { #quantified ( #VarReal ( t_post2 ) ) , 0.0 <=Real #VarReal ( t_post2 ) && #VarReal ( t_post2 ) <=Real #VarReal ( t_post ) } 0.0 +Real 1.0 *Real #VarReal ( t_post2 ) <=Trajectory 5.0 )
-    SetItem ( ep_i == #VarReal ( VAR_ep ) )
-    SetItem ( f_i == #VarReal ( VAR_f ) )
-    SetItem ( t_i == #VarReal ( VAR_t ) )
-    SetItem ( x_i == #VarReal ( VAR_x ) )
+    SetItem ( #VarReal ( tpost ) >=Real 0.0 )
+    SetItem ( #interval { #quantified ( #VarReal ( tpost1 ) ) , 0.0 <=Real #VarReal ( tpost1 ) && #VarReal ( tpost1 ) <=Real #VarReal ( tpost ) } #VarReal ( x ) +Real #VarReal ( f0 ) *Real #VarReal ( tpost1 ) >=Trajectory 0.0 )
+    SetItem ( #interval { #quantified ( #VarReal ( tpost2 ) ) , 0.0 <=Real #VarReal ( tpost2 ) && #VarReal ( tpost2 ) <=Real #VarReal ( tpost ) } 0.0 +Real 1.0 *Real #VarReal ( tpost2 ) <=Trajectory 5.0 )
   </evolutionConditions>
+  <nonDetAssignments>
+    f |-> #VarReal ( f0 )
+  </nonDetAssignments>
   <counter>
     3
   </counter>
