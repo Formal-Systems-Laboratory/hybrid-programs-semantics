@@ -141,7 +141,6 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
          <pgmVars> PGM_IDS => X, PGM_IDS </pgmVars>
 
     rule vars .Decls ; S:Stmts => S
-    syntax FullFormExpression ::= "#toWolframExpression" "(" BExp ")" [function]
 
     rule E1:Stmt ; E2:Stmts => E1 ~> E2
 ```
@@ -250,7 +249,6 @@ when all points in the trajectory respect it.
     syntax KItem ::= "#intervalBoundary" "(" Real ")"
                    | "#evolutionVariable" "(" Real ")"
 
-    syntax FullFormExpression ::= "#toWolframExpression" "(" BExp ")" [function]
 ```
 
 In order to give the semantics to a continuous evolution
