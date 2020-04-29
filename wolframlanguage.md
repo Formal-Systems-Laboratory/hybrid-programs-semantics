@@ -8,10 +8,12 @@ module WOLFRAMLANGUAGE-SYNTAX
     imports ID
     imports STRING
 
+    syntax FullFormExpressionConst ::= "True"  [token]
+                                     | "Reals" [token]
+
     syntax FullFormExpression ::= Id
+                                | FullFormExpressionConst
                                 | Real
-                                | "True"    [token]
-                                | "Reals"   [token]
                                 | Operator "[" FullFormExpressions "]"
 
     syntax FullFormExpressions ::= List{FullFormExpression, ","}
@@ -35,22 +37,25 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "FullForm"     [token]
 		      | "Exists"       [token]
 
-    syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
-                    | "#wolfram.expressionToString"    "(" FullFormExpression ")"   [function]
-                    | "#wolfram.expressionToStringAux" "(" FullFormExpressions ")"  [function]
 
 endmodule
 
 module WOLFRAMLANGUAGE
     imports WOLFRAMLANGUAGE-SYNTAX
 
-    rule #wolfram.expressionToString(ID:Id) => Id2String(ID)
-    rule #wolfram.expressionToString(REAL:Real) => Real2String(REAL)
-    rule #wolfram.expressionToString(True) => "True"
-    rule #wolfram.expressionToString(Reals) => "Reals"
+    syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
+                    | "Const2String" "(" FullFormExpressionConst ")"                [function, hook(STRING.token2string)]
+                    | "#wolfram.expressionToString"    "(" FullFormExpression ")"   [function]
+                    | "#wolfram.expressionToStringAux" "(" FullFormExpressions ")"  [function]
 
-    rule #wolfram.expressionToStringAux(E1:FullFormExpression , E2:FullFormExpressions)
-      => #wolfram.expressionToString(E1) +String ", " +String #wolfram.expressionToStringAux(E2)
+    rule #wolfram.expressionToString(ID:Id) => Id2String(ID)
+    rule #wolfram.expressionToString(REAL:RealVal) => Real2String(REAL)
+    rule #wolfram.expressionToString(C:FullFormExpressionConst) => Const2String(C)
+
+    rule #wolfram.expressionToStringAux( E1:FullFormExpression
+                                       , E2:FullFormExpression
+                                       , Es:FullFormExpressions )
+      => #wolfram.expressionToString(E1) +String ", " +String #wolfram.expressionToStringAux(E2,Es)
 
     rule #wolfram.expressionToStringAux(E1:FullFormExpression, .FullFormExpressions)
       => #wolfram.expressionToString(E1)
