@@ -9,7 +9,7 @@
     a |-> 3.0
   </state>
   <evolutionConditions>
-    SetItem ( #VarReal ( a ) >Real 2.0 )
+    SetItem ( #VarReal ( a ) > 2.0 )
   </evolutionConditions>
   <nonDetAssignments>
     .Map

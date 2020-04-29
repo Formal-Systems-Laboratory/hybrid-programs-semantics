@@ -6,8 +6,8 @@
     b , a , .Ids
   </pgmVars>
   <state>
-    a |-> #VarReal ( a ) +Real 1.0
-    b |-> ( #VarReal ( a ) +Real 1.0 ) *Real 2.0
+    a |-> #VarReal ( a ) + 1.0
+    b |-> ( #VarReal ( a ) + 1.0 ) * 2.0
   </state>
   <evolutionConditions>
     .Set

@@ -8,15 +8,15 @@
   <state>
     ep |-> 5.0
     f |-> #VarReal ( f0 )
-    t |-> 0.0 +Real 1.0 *Real #VarReal ( tpost )
-    t_traj |-> #interval { #quantified ( #VarReal ( tpost2 ) ) , 0.0 <=Real #VarReal ( tpost2 ) && #VarReal ( tpost2 ) <=Real #VarReal ( tpost ) } 0.0 +Real 1.0 *Real #VarReal ( tpost2 )
-    x |-> #VarReal ( x ) +Real #VarReal ( f0 ) *Real #VarReal ( tpost )
-    x_traj |-> #interval { #quantified ( #VarReal ( tpost1 ) ) , 0.0 <=Real #VarReal ( tpost1 ) && #VarReal ( tpost1 ) <=Real #VarReal ( tpost ) } #VarReal ( x ) +Real #VarReal ( f0 ) *Real #VarReal ( tpost1 )
+    t |-> 0.0 + 1.0 * #VarReal ( tpost )
+    t_traj |-> #interval { #quantified ( #VarReal ( tpost2 ) ) , ( 0.0 <= #VarReal ( tpost2 ) ) && #VarReal ( tpost2 ) <= #VarReal ( tpost ) } ( 0.0 + 1.0 * #VarReal ( tpost2 ) )
+    x |-> #VarReal ( x ) + #VarReal ( f0 ) * #VarReal ( tpost )
+    x_traj |-> #interval { #quantified ( #VarReal ( tpost1 ) ) , ( 0.0 <= #VarReal ( tpost1 ) ) && #VarReal ( tpost1 ) <= #VarReal ( tpost ) } ( #VarReal ( x ) + #VarReal ( f0 ) * #VarReal ( tpost1 ) )
   </state>
   <evolutionConditions>
-    SetItem ( #VarReal ( tpost ) >=Real 0.0 )
-    SetItem ( #interval { #quantified ( #VarReal ( tpost1 ) ) , 0.0 <=Real #VarReal ( tpost1 ) && #VarReal ( tpost1 ) <=Real #VarReal ( tpost ) } #VarReal ( x ) +Real #VarReal ( f0 ) *Real #VarReal ( tpost1 ) >=Trajectory 0.0 )
-    SetItem ( #interval { #quantified ( #VarReal ( tpost2 ) ) , 0.0 <=Real #VarReal ( tpost2 ) && #VarReal ( tpost2 ) <=Real #VarReal ( tpost ) } 0.0 +Real 1.0 *Real #VarReal ( tpost2 ) <=Trajectory 5.0 )
+    SetItem ( #VarReal ( tpost ) >= 0.0 )
+    SetItem ( #interval { #quantified ( #VarReal ( tpost1 ) ) , ( 0.0 <= #VarReal ( tpost1 ) ) && #VarReal ( tpost1 ) <= #VarReal ( tpost ) } ( #VarReal ( x ) + #VarReal ( f0 ) * #VarReal ( tpost1 ) ) >=Trajectory 0.0 )
+    SetItem ( #interval { #quantified ( #VarReal ( tpost2 ) ) , ( 0.0 <= #VarReal ( tpost2 ) ) && #VarReal ( tpost2 ) <= #VarReal ( tpost ) } ( 0.0 + 1.0 * #VarReal ( tpost2 ) ) <=Trajectory 5.0 )
   </evolutionConditions>
   <nonDetAssignments>
     f |-> #VarReal ( f0 )
