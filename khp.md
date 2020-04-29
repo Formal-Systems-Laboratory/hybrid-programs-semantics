@@ -22,8 +22,7 @@ module KHP-SYNTAX
                  > AExp "+" AExp   [strict, left]
                  | AExp "-" AExp   [strict, left]
 
-    syntax BExp ::= Bool
-                  | AExp ">" AExp   [strict]
+    syntax BExp ::= AExp ">" AExp   [strict]
                   | AExp "<" AExp   [strict]
                   | AExp ">=" AExp  [strict]
                   | AExp "==" AExp  [strict]
@@ -148,7 +147,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 ### Discrete Assignment and Lookup
 
 ```{.k}
-    rule <k> (X:Id := A:Real => .) ... </k>
+    rule <k> (X:Id := A:AExp => .) ... </k>
          <state> ... X |-> (_ => A) ... </state>
     rule <k> (X:Id := * => .) ... </k>
          <state> ... X |-> (_ => #freshVar(X, I)) ... </state>
@@ -164,20 +163,18 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
  - Todo: Implement basic support for Reals
 
 ```{.k}
-    rule A:Real * B:Real => A *Real B
-    rule A:Real + B:Real => A +Real B
-    rule A:Real - B:Real => A -Real B
-    rule A:Real / B:Real => A /Real B
+    rule isKResult(A + B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A * B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A - B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A / B) => isKResult(A) andBool isKResult(B)
 
-    rule A:Real > B:Real => A >Real B
-    rule A:Real < B:Real => A <Real B
+    rule isKResult(A < B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A > B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A <= B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A >= B) => isKResult(A) andBool isKResult(B)
+    rule isKResult(A && B) => isKResult(A) andBool isKResult(B)
 
-    rule A:Real >= B:Real => A >=Real B
-    rule A:Real <= B:Real => A <=Real B
-
-    rule A:Bool && B:Bool => A andBool B
-
-    rule <k> ?(B:Bool) => . ... </k>
+    rule <k> ?(B:BExp) => . ... </k>
          <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
 ```
 
@@ -236,7 +233,7 @@ when all points in the trajectory respect it.
     syntax AExp ::= Trajectory
     syntax KResult ::= Trajectory
 
-    syntax Bool ::= Trajectory "<Trajectory" Exp
+    syntax BExp ::= Trajectory "<Trajectory" Exp
                   | Trajectory ">Trajectory" Exp
                   | Trajectory "<=Trajectory" Exp
                   | Trajectory ">=Trajectory" Exp
@@ -283,7 +280,7 @@ to the skolemization proof rule in differential dynamic logic.
          </k>
          <counter> COUNTER => COUNTER +Int 1 </counter>
          <evolutionConditions> ...
-            (.Set => SetItem(#VarReal(String2Id("tpost")) >=Real 0.0)) ...  </evolutionConditions>
+            (.Set => SetItem(#VarReal(String2Id("tpost")) >= 0.0)) ...  </evolutionConditions>
 
     rule <k>   #evolutionVariable(E_VAR)
             ~> #intervalBoundary(BOUND) ~> X ' = I
@@ -291,13 +288,13 @@ to the skolemization proof rule in differential dynamic logic.
            ...
          </k>
          <state> ...
-                X |-> ( V => (V +Real (I *Real BOUND)) )
+                X |-> ( V => (V + (I * BOUND)) )
                 (.Map =>  (#appendStrToPgmVar(X, "_traj")
                             |-> ( #interval { #quantified(E_VAR)
-                                            , ({0.0}:>Real <=Real E_VAR) &&
-                                              (E_VAR <=Real BOUND)
+                                            , ({0.0}:>RealVal <= E_VAR) &&
+                                              (E_VAR <= BOUND)
                                           }
-                                (V +Real (I *Real E_VAR))
+                                (V + (I * E_VAR))
                                 )
                            )
                 )
@@ -323,7 +320,7 @@ Mechanism to handle storing evolution conditions
     rule B1:BExp , B2:ContBExp => B1 ~> #store ~> B2
     rule B1:Exp ~> #storeDone => B1 ~> #store
 
-    rule <k> B:Bool ~> #store => . ... </k>
+    rule <k> B:BExp ~> #store => . ... </k>
          <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
 ```
 
@@ -341,27 +338,23 @@ Mechanism to handle storing evolution conditions
     rule #toWolframExpression(A == B) => Equal[ #toWolframExpression(A)
                                               , #toWolframExpression(B)]
 
-    rule #toWolframExpression(A andBool B) => And[ #toWolframExpression(A)
-                                                 , #toWolframExpression(B)]
-    rule #toWolframExpression(A ==Real B) => Equal[ #toWolframExpression(A)
+    rule #toWolframExpression(A <= B) => LessEqual[ #toWolframExpression(A)
                                                   , #toWolframExpression(B)]
-    rule #toWolframExpression(A <=Real B) => LessEqual[ #toWolframExpression(A)
-                                                      , #toWolframExpression(B)]
-    rule #toWolframExpression(A >=Real B) => GreaterEqual[ #toWolframExpression(A)
-                                                         , #toWolframExpression(B)]
-    rule #toWolframExpression(A <Real B) => Less[ #toWolframExpression(A)
-                                                , #toWolframExpression(B)]
-    rule #toWolframExpression(A >Real B) => Greater[ #toWolframExpression(A)
-                                                   , #toWolframExpression(B)]
+    rule #toWolframExpression(A >= B) => GreaterEqual[ #toWolframExpression(A)
+                                                     , #toWolframExpression(B)]
+    rule #toWolframExpression(A < B) => Less[ #toWolframExpression(A)
+                                            , #toWolframExpression(B)]
+    rule #toWolframExpression(A > B) => Greater[ #toWolframExpression(A)
+                                               , #toWolframExpression(B)]
 
-    rule #toWolframExpression(A +Real B) => Plus[ #toWolframExpression(A)
+    rule #toWolframExpression(A + B) => Plus[ #toWolframExpression(A)
+                                            , #toWolframExpression(B)]
+    rule #toWolframExpression(A - B) => Subtract[ #toWolframExpression(A)
                                                 , #toWolframExpression(B)]
-    rule #toWolframExpression(A -Real B) => Subtract[ #toWolframExpression(A)
-                                                    , #toWolframExpression(B)]
-    rule #toWolframExpression(A *Real B) => Times[ #toWolframExpression(A)
-                                                 , #toWolframExpression(B)]
-    rule #toWolframExpression(A /Real B) => Divide[ #toWolframExpression(A)
-                                                  , #toWolframExpression(B)]
+    rule #toWolframExpression(A * B) => Times[ #toWolframExpression(A)
+                                             , #toWolframExpression(B)]
+    rule #toWolframExpression(A / B) => Divide[ #toWolframExpression(A)
+                                              , #toWolframExpression(B)]
 
     rule #toWolframExpression( #interval { #quantified(VAR) , CONSTRAINT }
                                     EVOLUTION >=Trajectory DOMAIN )

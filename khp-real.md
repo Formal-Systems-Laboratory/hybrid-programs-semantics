@@ -15,20 +15,8 @@ module REAL-SYNTAX
 
     syntax Real ::= RealVal
                   | RealVar
-                  | Real "/Real" Real   
-                  | Real "*Real" Real   
-                  | Real "^Real" Real   
-                  > Real "+Real" Real   
-                  | Real "-Real" Real   
 
-    syntax String ::= "Real2String" "(" Real ")" [function, hook(STRING.token2string)]
-
-    syntax Bool  ::= Real ">Real" Real  
-                   | Real "<Real" Real  
-                   | Real ">=Real" Real 
-                   | Real "<=Real" Real 
-                   | Real "!=Real" Real 
-                   | Real "==Real" Real 
+    syntax String ::= "Real2String" "(" RealVal ")" [function, hook(STRING.token2string)]
 
 endmodule
 
