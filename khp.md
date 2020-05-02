@@ -113,6 +113,7 @@ module KHP
                   <evolutionConditions> .Set </evolutionConditions>
                   <nonDetAssignments> .Map </nonDetAssignments>
                   <counter> 0 </counter>
+                  <constraints> .K </constraints>
 
     rule #processMode(#regular) ~> P:Pgm => P
     rule #processMode(#constraintSynthesis) ~> P:Pgm => P ~> #synthesizeConstraints
@@ -393,49 +394,51 @@ Mechanism to handle storing evolution conditions
                         ]
 	       ]
 
-    syntax KItem ::= "#constraints" "(" FullFormExpression ")"
-                   | "#constraints" "(" String ")"
+    syntax KItem ::= "#constraints" "(" String ")"
                    | "#processEvolutionConstraints"
                    | "#processFinalStateConstraints"
                    | "#processNonDetAssignments"
                    | "#error"
 
-    rule <k> #synthesizeConstraints => #processEvolutionConstraints ~> #constraints(And[True]) </k>
+    rule <k> #synthesizeConstraints
+      =>     #processEvolutionConstraints
+          ~> #processFinalStateConstraints
+          ~> #processNonDetAssignments ... </k>
+         <constraints> _ => And[True] </constraints>
 
-    rule <k> #processEvolutionConstraints
-          ~> #constraints(And[E => #toWolframExpression(B), E]) </k>
+    rule <k> #processEvolutionConstraints ... </k>
          <evolutionConditions> ... (SetItem(B) => .Set) ...  </evolutionConditions>
+         <constraints> And[E => #toWolframExpression(B), E] </constraints>
 
-    rule <k> #processEvolutionConstraints ~> CONSTRAINTS => #processFinalStateConstraints ~> CONSTRAINTS </k>
+    rule <k> #processEvolutionConstraints => . ... </k>
          <evolutionConditions> .Set </evolutionConditions>
 
-    rule <k> #processFinalStateConstraints
-          ~> #constraints(And[ E => Equal[ #toWolframExpression(#appendStrToPgmVar(HEAD, "post"))
-                                         , #toWolframExpression(VAL)
-                                         ] , E ]) </k>
+    rule <k> #processFinalStateConstraints ... </k>
          <pgmVars> (HEAD:Id , REST:Ids) => REST </pgmVars>
          <state> ... (HEAD |-> VAL) ... </state>
+         <constraints> And[ E => Equal[ #toWolframExpression(#appendStrToPgmVar(HEAD, "post"))
+                                      , #toWolframExpression(VAL)
+                                      ] , E ] </constraints>
 
-    rule <k> #processNonDetAssignments ~>
-             #constraints((E => Exists[#toWolframExpression(V), E])) </k>
-         <nonDetAssignments> ... ((X |-> V) => .Map) ... </nonDetAssignments>
+    rule <k> #processFinalStateConstraints => . ... </k>
+         <pgmVars> .Ids </pgmVars>
 
-    rule <k> #processNonDetAssignments ~> #constraints(WLFRAMEXPR)
+   rule <k> #processNonDetAssignments ... </k>
+         <nonDetAssignments> ... ((_ |-> V) => .Map) ... </nonDetAssignments>
+         <constraints> E:FullFormExpression => Exists[#toWolframExpression(V), E] </constraints>
+
+    rule <k> #processNonDetAssignments
           => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
                           , #mkstemp("query_XXXXXX")
-                          ) </k>
+                          ) ... </k>
          <nonDetAssignments> .Map </nonDetAssignments>
-
-
-    rule <k> #processFinalStateConstraints => #processNonDetAssignments ... </k>
-         <pgmVars> .Ids </pgmVars>
+         <constraints> WLFRAMEXPR </constraints>
 
     syntax KItem ::= "#wolfram.open"  "(" String "," IOFile ")"
                    | "#wolfram.write" "(" K "," String "," Int ")"
                    | "#wolfram.close" "(" String "," K ")"
                    | "#wolfram.launch" "(" String ")"
                    | "#wolfram.result" "(" KItem ")"
-
 
     rule #wolfram.open(QUERY, #tempFile(FNAME, FD))
       => #wolfram.write(#write(FD, QUERY), FNAME, FD)
@@ -452,4 +455,3 @@ Mechanism to handle storing evolution conditions
 
 endmodule
 ```
-
