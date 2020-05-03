@@ -398,12 +398,14 @@ Mechanism to handle storing evolution conditions
                    | "#processEvolutionConstraints"
                    | "#processFinalStateConstraints"
                    | "#processNonDetAssignments"
+                   | "#generateMathematica"
                    | "#error"
 
     rule <k> #synthesizeConstraints
       =>     #processEvolutionConstraints
           ~> #processFinalStateConstraints
-          ~> #processNonDetAssignments ... </k>
+          ~> #processNonDetAssignments
+          ~> #generateMathematica ... </k>
          <constraints> _ => And[True] </constraints>
 
     rule <k> #processEvolutionConstraints ... </k>
@@ -427,7 +429,10 @@ Mechanism to handle storing evolution conditions
          <nonDetAssignments> ... ((_ |-> V) => .Map) ... </nonDetAssignments>
          <constraints> E:FullFormExpression => Exists[#toWolframExpression(V), E] </constraints>
 
-    rule <k> #processNonDetAssignments
+   rule <k> #processNonDetAssignments => . ... </k>
+         <nonDetAssignments> .Map </nonDetAssignments>
+
+    rule <k> #generateMathematica
           => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
                           , #mkstemp("query_XXXXXX")
                           ) ... </k>
