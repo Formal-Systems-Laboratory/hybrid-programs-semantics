@@ -23,7 +23,7 @@ def build_khp(backend, alias, tangle_selector = '', flags = ''):
                           , backend       = backend
                           , main          = 'khp.md'
                           , other         = ['khp-real.md', 'wolframlanguage.md']
-                          , flags         = '--syntax-module KHP-SYNTAX ' + flags
+                          , flags         = '--syntax-module KHP-SYNTAX --no-prelude ' + flags
                           , runner_script = './khp'
                           , tangle_selector = '.k,' + tangle_selector
                           )

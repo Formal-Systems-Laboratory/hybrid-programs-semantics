@@ -127,6 +127,11 @@ class KHPRunner(KRunner):
         synthesis_parser = subparsers.add_parser('synthesis', help = 'Use Symbolic Execution to Synthesize Constraints')
         self.add_definition_argument(synthesis_parser)
         synthesis_parser.add_argument('program', help = 'Path to program')
+        synthesis_parser.add_argument('--emit-C'
+                                     , dest = 'emit_c'
+                                     , action ='store_true'
+                                     , default = False
+                                     , help = 'Emit constraints in C')
         synthesis_parser.add_argument('args', nargs = argparse.REMAINDER, help = 'Arguments to pass to K')
         synthesis_parser.set_defaults(func = functools.partial(self.execute_synthesis, self))
 
@@ -138,11 +143,15 @@ class KHPRunner(KRunner):
         if definition.backend == 'ocaml':
             opam_config_exec = ['opam', 'config', 'exec', '--']
             binary = 'opam'
+        output_format = "#Mathematica"
+        if args.emit_c:
+            output_format = '#C'
+
         process_args =  opam_config_exec \
                       + [ self.proj.kbindir('krun') \
                         , '--directory', definition.directory()
                         , args.program
-                        , '-cMODE=\"#constraintSynthesis\"'] \
+                        , '-cMODE=\"#constraintSynthesis({})\"'.format(output_format) ] \
                       + self.proj._k_definitions[args.definition]._krun_flags.split() \
                       + args.args
         result = subprocess.run( process_args

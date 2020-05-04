@@ -3,10 +3,11 @@ The Syntax Of Wolfram Language Expressions
 
 ```{.k}
 requires "khp-real.k"
+requires "domains.k"
+
 module WOLFRAMLANGUAGE-SYNTAX
     imports REAL-SYNTAX
-    imports ID
-    imports STRING
+    imports ID-SYNTAX
 
     syntax FullFormExpressionConst ::= "True"  [token]
                                      | "Reals" [token]
@@ -42,6 +43,8 @@ endmodule
 
 module WOLFRAMLANGUAGE
     imports WOLFRAMLANGUAGE-SYNTAX
+    imports ID
+    imports STRING
 
     syntax String ::= "Operator2String" "(" Operator ")"                            [function, hook(STRING.token2string)]
                     | "Const2String" "(" FullFormExpressionConst ")"                [function, hook(STRING.token2string)]

@@ -4,12 +4,9 @@ Basic Reals Implementation
 ```{.k}
 require "substitution.k"
 module REAL-SYNTAX
-    imports BOOL-SYNTAX
-    imports STRING-SYNTAX
-    imports STRING
-    imports ID
+    imports ID-SYNTAX
 
-    syntax RealVal ::= r"[\\+-]?[0-9]+\\.[0-9]*"  [token, prefer, prec(1)]
+    syntax RealVal ::= r"[\\+-]?[0-9]+\\.[0-9]*"  [token, prefer, prec(2)]
 
     syntax RealVar ::= "#VarReal" "(" Id ")"
 
@@ -22,7 +19,5 @@ endmodule
 
 module REAL
     imports REAL-SYNTAX
-    imports SUBSTITUTION
-    imports K-IO
 endmodule
 ```

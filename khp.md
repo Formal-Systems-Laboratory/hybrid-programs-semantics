@@ -7,13 +7,11 @@ Dynamic Logic in K
 ```{.k}
 requires "khp-real.k"
 requires "wolframlanguage.k"
+requires "kast.k"
 
 module KHP-SYNTAX
-    imports BOOL
-    imports ID
-    imports INT
-    imports REAL
-
+    imports ID-SYNTAX
+    imports REAL-SYNTAX
 
     syntax AExp ::= Id | Real
                  | ( AExp )        [bracket]
@@ -93,15 +91,21 @@ Main symbolic execution semantics
 ```{.k}
 module KHP
     imports KHP-SYNTAX
+    imports ID
     imports MAP
     imports WOLFRAMLANGUAGE
+    imports REAL
     imports K-IO
 
+    syntax Output ::= "#Mathematica"
+                    | "#C"
     syntax Mode ::= "#regular"
-                  | "#constraintSynthesis"
+                  | "#constraintSynthesis" "(" Output ")"
 
     syntax KItem ::= "#processMode" "(" Mode ")"
                    | "#synthesizeConstraints"
+                   | "#emitC"
+                   | "#emitMathematica"
 
     syntax Ids ::= ".Ids"
                  | Id
@@ -116,7 +120,11 @@ module KHP
                   <constraints> .K </constraints>
 
     rule #processMode(#regular) ~> P:Pgm => P
-    rule #processMode(#constraintSynthesis) ~> P:Pgm => P ~> #synthesizeConstraints
+    rule #processMode(#constraintSynthesis(#Mathematica)) ~> P:Pgm
+      => P ~> #synthesizeConstraints ~> #emitMathematica
+
+    rule #processMode(#constraintSynthesis(#C)) ~> P:Pgm
+      => P ~> #synthesizeConstraints ~> #emitC
 
     syntax KResult ::= Bool | Real
 
@@ -398,14 +406,12 @@ Mechanism to handle storing evolution conditions
                    | "#processEvolutionConstraints"
                    | "#processFinalStateConstraints"
                    | "#processNonDetAssignments"
-                   | "#generateMathematica"
                    | "#error"
 
     rule <k> #synthesizeConstraints
       =>     #processEvolutionConstraints
           ~> #processFinalStateConstraints
-          ~> #processNonDetAssignments
-          ~> #generateMathematica ... </k>
+          ~> #processNonDetAssignments ... </k>
          <constraints> _ => And[True] </constraints>
 
     rule <k> #processEvolutionConstraints ... </k>
@@ -432,11 +438,10 @@ Mechanism to handle storing evolution conditions
    rule <k> #processNonDetAssignments => . ... </k>
          <nonDetAssignments> .Map </nonDetAssignments>
 
-    rule <k> #generateMathematica
+    rule <k> #emitMathematica
           => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
                           , #mkstemp("query_XXXXXX")
                           ) ... </k>
-         <nonDetAssignments> .Map </nonDetAssignments>
          <constraints> WLFRAMEXPR </constraints>
 
     syntax KItem ::= "#wolfram.open"  "(" String "," IOFile ")"
