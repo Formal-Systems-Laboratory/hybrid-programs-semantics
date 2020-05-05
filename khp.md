@@ -125,6 +125,7 @@ module KHP
                     <evolutionConditions> .Set </evolutionConditions>
                     <constraints> .K </constraints>
                     <queryFile> .K </queryFile>
+                    <cGenStmts mulitplicity="?"> .List </cGenStmts>
                   </synthesis>
 
     rule #processMode(#regular) ~> P:Pgm => P
@@ -482,6 +483,26 @@ Synthesis Pipelines
 
     rule <k> #emitMathematica ... </k>
          <queryFile> .K => #mkstemp("query_XXXXXX") </queryFile>
+```
+
+C Generation Pipeline
+---------------------
+
+```{.k}
+
+    rule <k> #initConfiguration(#C) => . ... </k>
+         <gPgmVars> PGM_VARS </gPgmVars>
+         <gNonDetAssignments> NONDET_ASSN </gNonDetAssignments>
+         <gEvolutionConditions> EVO_COND </gEvolutionConditions>
+         (.Bag => (<synthesis>
+                    <pgmVars> PGM_VARS </pgmVars>
+                    <nonDetAssignments> NONDET_ASSN </nonDetAssignments>
+                    <evolutionConditions> EVO_COND </evolutionConditions>
+                    <constraints> And[True] </constraints>
+                    <queryFile> .K </queryFile>
+                    <cGenStmts> .List </cGenStmts>
+                    ...
+                   </synthesis>))
 
     syntax KItem ::= "#wolfram.launch" "(" String ")"
                    | "#wolfram.result" "(" KItem ")"
