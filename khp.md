@@ -99,6 +99,7 @@ module KHP
 
     syntax Output ::= "#Mathematica"
                     | "#C"
+
     syntax Mode ::= "#regular"
                   | "#constraintSynthesis" "(" Output ")"
 
@@ -118,6 +119,7 @@ module KHP
                   <nonDetAssignments> .Map </nonDetAssignments>
                   <counter> 0 </counter>
                   <constraints> .K </constraints>
+                  <queryFile> .K </queryFile>
 
     rule #processMode(#regular) ~> P:Pgm => P
     rule #processMode(#constraintSynthesis(#Mathematica)) ~> P:Pgm
@@ -431,32 +433,25 @@ Mechanism to handle storing evolution conditions
     rule <k> #processFinalStateConstraints => . ... </k>
          <pgmVars> .Ids </pgmVars>
 
-   rule <k> #processNonDetAssignments ... </k>
+    rule <k> #processNonDetAssignments ... </k>
          <nonDetAssignments> ... ((_ |-> V) => .Map) ... </nonDetAssignments>
          <constraints> E:FullFormExpression => Exists[#toWolframExpression(V), E] </constraints>
 
-   rule <k> #processNonDetAssignments => . ... </k>
-         <nonDetAssignments> .Map </nonDetAssignments>
+    rule <k> #processNonDetAssignments => . ... </k>
+          <nonDetAssignments> .Map </nonDetAssignments>
 
     rule <k> #emitMathematica
-          => #wolfram.open( #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals])
-                          , #mkstemp("query_XXXXXX")
-                          ) ... </k>
+      =>     #write(FD , #wolfram.expressionToString(Resolve[ WLFRAMEXPR, Reals]))
+          ~> #close(FD)
+          ~> #wolfram.launch(FNAME) ... </k>
          <constraints> WLFRAMEXPR </constraints>
+         <queryFile> #tempFile(FNAME,FD) </queryFile>
 
-    syntax KItem ::= "#wolfram.open"  "(" String "," IOFile ")"
-                   | "#wolfram.write" "(" K "," String "," Int ")"
-                   | "#wolfram.close" "(" String "," K ")"
-                   | "#wolfram.launch" "(" String ")"
+    rule <k> #emitMathematica ... </k>
+         <queryFile> .K => #mkstemp("query_XXXXXX") </queryFile>
+
+    syntax KItem ::= "#wolfram.launch" "(" String ")"
                    | "#wolfram.result" "(" KItem ")"
-
-    rule #wolfram.open(QUERY, #tempFile(FNAME, FD))
-      => #wolfram.write(#write(FD, QUERY), FNAME, FD)
-
-    rule #wolfram.write(_, FNAME, FD)
-      => #wolfram.close(FNAME, #close(FD))
-
-    rule #wolfram.close(FNAME, _) => #wolfram.launch(FNAME)
 
     rule #wolfram.launch( FNAME )
       => #wolfram.result(#system("wolframscript -print -f " +String FNAME))

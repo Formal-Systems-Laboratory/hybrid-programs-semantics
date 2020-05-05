@@ -21,4 +21,7 @@
   <constraints>
     .
   </constraints>
+  <queryFile>
+    .
+  </queryFile>
 </generatedTop>
