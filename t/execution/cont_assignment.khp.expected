@@ -2,9 +2,6 @@
   <k>
     .
   </k>
-  <pgmVars>
-    ep , t , f , x , .Ids
-  </pgmVars>
   <state>
     ep |-> 5.0
     f |-> #VarReal ( f0 )
@@ -13,21 +10,19 @@
     x |-> #VarReal ( x ) + #VarReal ( f0 ) * #VarReal ( tpost )
     x_traj |-> #interval { #quantified ( #VarReal ( tpost1 ) ) , ( 0.0 <= #VarReal ( tpost1 ) ) && #VarReal ( tpost1 ) <= #VarReal ( tpost ) } ( #VarReal ( x ) + #VarReal ( f0 ) * #VarReal ( tpost1 ) )
   </state>
-  <evolutionConditions>
+  <gPgmVars>
+    ep , t , f , x , .Ids
+  </gPgmVars>
+  <gNonDetAssignments>
+    f |-> #VarReal ( f0 )
+  </gNonDetAssignments>
+  <gEvolutionConditions>
     SetItem ( #VarReal ( tpost ) >= 0.0 )
     SetItem ( #interval { #quantified ( #VarReal ( tpost1 ) ) , ( 0.0 <= #VarReal ( tpost1 ) ) && #VarReal ( tpost1 ) <= #VarReal ( tpost ) } ( #VarReal ( x ) + #VarReal ( f0 ) * #VarReal ( tpost1 ) ) >=Trajectory 0.0 )
     SetItem ( #interval { #quantified ( #VarReal ( tpost2 ) ) , ( 0.0 <= #VarReal ( tpost2 ) ) && #VarReal ( tpost2 ) <= #VarReal ( tpost ) } ( 0.0 + 1.0 * #VarReal ( tpost2 ) ) <=Trajectory 5.0 )
-  </evolutionConditions>
-  <nonDetAssignments>
-    f |-> #VarReal ( f0 )
-  </nonDetAssignments>
+  </gEvolutionConditions>
   <counter>
     3
   </counter>
-  <constraints>
-    .
-  </constraints>
-  <queryFile>
-    .
-  </queryFile>
+  .SynthesisCell
 </generatedTop>

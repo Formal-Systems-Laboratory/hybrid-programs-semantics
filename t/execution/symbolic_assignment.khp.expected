@@ -2,25 +2,20 @@
   <k>
     .
   </k>
-  <pgmVars>
-    a , .Ids
-  </pgmVars>
   <state>
     a |-> #VarReal ( a0 )
   </state>
-  <evolutionConditions>
-    .Set
-  </evolutionConditions>
-  <nonDetAssignments>
+  <gPgmVars>
+    a , .Ids
+  </gPgmVars>
+  <gNonDetAssignments>
     a |-> #VarReal ( a0 )
-  </nonDetAssignments>
+  </gNonDetAssignments>
+  <gEvolutionConditions>
+    .Set
+  </gEvolutionConditions>
   <counter>
     1
   </counter>
-  <constraints>
-    .
-  </constraints>
-  <queryFile>
-    .
-  </queryFile>
+  .SynthesisCell
 </generatedTop>

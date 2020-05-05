@@ -113,20 +113,30 @@ module KHP
                  | Ids "," Ids  [right]
 
     configuration <k> #processMode($MODE) ~> $PGM:Pgm </k>
-                  <pgmVars> .Ids </pgmVars>
                   <state> .Map </state>
-                  <evolutionConditions> .Set </evolutionConditions>
-                  <nonDetAssignments> .Map </nonDetAssignments>
+                  // Global (non-mutable) prefixed with "g"
+                  <gPgmVars> .Ids </gPgmVars>
+                  <gNonDetAssignments> .Map </gNonDetAssignments>
+                  <gEvolutionConditions> .Set </gEvolutionConditions>
                   <counter> 0 </counter>
-                  <constraints> .K </constraints>
-                  <queryFile> .K </queryFile>
+                  <synthesis multiplicity="?">
+                    <pgmVars> .Ids </pgmVars>
+                    <nonDetAssignments> .Map </nonDetAssignments>
+                    <evolutionConditions> .Set </evolutionConditions>
+                    <constraints> .K </constraints>
+                    <queryFile> .K </queryFile>
+                  </synthesis>
 
     rule #processMode(#regular) ~> P:Pgm => P
     rule #processMode(#constraintSynthesis(#Mathematica)) ~> P:Pgm
-      => P ~> #synthesizeConstraints ~> #emitMathematica
+      => P ~> #initConfiguration(#Mathematica)
+           ~> #synthesizeConstraints
+           ~> #emitMathematica
 
     rule #processMode(#constraintSynthesis(#C)) ~> P:Pgm
-      => P ~> #synthesizeConstraints ~> #emitC
+      => P ~> #initConfiguration(#C)
+           ~> #synthesizeConstraints
+           ~> #emitC
 
     syntax KResult ::= Bool | Real
 
@@ -148,7 +158,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 
     rule <k> vars ( X:Id , L:Decls => L) ; _ ... </k>
          <state> ... .Map => (X |-> #VarReal(X)) ... </state>
-         <pgmVars> PGM_IDS => X, PGM_IDS </pgmVars>
+         <gPgmVars> PGM_IDS => X, PGM_IDS </gPgmVars>
 
     rule vars .Decls ; S:Stmts => S
 
@@ -163,7 +173,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule <k> (X:Id := * => .) ... </k>
          <state> ... X |-> (_ => #freshVar(X, I)) ... </state>
          <counter> I:Int => I +Int 1 </counter>
-         <nonDetAssignments> ... (.Map => (X |-> #freshVar(X, I))) ...  </nonDetAssignments>
+         <gNonDetAssignments> ... (.Map => (X |-> #freshVar(X, I))) ...  </gNonDetAssignments>
 
     rule <k> X:Id => V ... </k>
          <state> ... (X |-> V) ... </state>
@@ -186,7 +196,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
     rule isKResult(A && B) => isKResult(A) andBool isKResult(B)
 
     rule <k> ?(B:BExp) => . ... </k>
-         <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
+         <gEvolutionConditions> ... (.Set => SetItem(B)) ... </gEvolutionConditions>
 ```
 
 ### Nondeterminstic Choice
@@ -290,8 +300,8 @@ to the skolemization proof rule in differential dynamic logic.
            ...
          </k>
          <counter> COUNTER => COUNTER +Int 1 </counter>
-         <evolutionConditions> ...
-            (.Set => SetItem(#VarReal(String2Id("tpost")) >= 0.0)) ...  </evolutionConditions>
+         <gEvolutionConditions> ...
+            (.Set => SetItem(#VarReal(String2Id("tpost")) >= 0.0)) ...  </gEvolutionConditions>
 
     rule <k>   #evolutionVariable(E_VAR)
             ~> #intervalBoundary(BOUND) ~> X ' = I
@@ -332,7 +342,7 @@ Mechanism to handle storing evolution conditions
     rule B1:Exp ~> #storeDone => B1 ~> #store
 
     rule <k> B:BExp ~> #store => . ... </k>
-         <evolutionConditions> ... (.Set => SetItem(B)) ... </evolutionConditions>
+         <gEvolutionConditions> ... (.Set => SetItem(B)) ... </gEvolutionConditions>
 ```
 
 ### Constraint Synthesis
@@ -403,6 +413,29 @@ Mechanism to handle storing evolution conditions
                	        , #toWolframExpression(DOMAIN)
                         ]
 	       ]
+```
+
+Synthesis Pipelines
+-------------------
+
+### Configuration Initialization
+
+```{.k}
+
+    syntax KItem ::= "#initConfiguration" "(" Output ")"
+
+    rule <k> #initConfiguration(#Mathematica) => . ... </k>
+         <gPgmVars> PGM_VARS </gPgmVars>
+         <gNonDetAssignments> NONDET_ASSN </gNonDetAssignments>
+         <gEvolutionConditions> EVO_COND </gEvolutionConditions>
+         (.Bag => (<synthesis>
+                    <pgmVars> PGM_VARS </pgmVars>
+                    <nonDetAssignments> NONDET_ASSN </nonDetAssignments>
+                    <evolutionConditions> EVO_COND </evolutionConditions>
+                    <constraints> And[True] </constraints>
+                    <queryFile> .K </queryFile>
+                    ...
+                   </synthesis>))
 
     syntax KItem ::= "#constraints" "(" String ")"
                    | "#processEvolutionConstraints"
