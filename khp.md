@@ -450,6 +450,20 @@ Mechanism to handle storing evolution conditions
     rule <k> #emitMathematica ... </k>
          <queryFile> .K => #mkstemp("query_XXXXXX") </queryFile>
 
+    syntax KItem ::= "#genStructs"
+                   | "#genFunctionSig"
+                   | "#genQuery"
+
+    rule <k> #emitC
+      =>     #genIncludes
+          ~> #genStructs
+          ~> #genFunctionSig
+          ~> #genQuery
+          ~> #wolfram.launch(FNAME) ... </k>
+
+    rule <k> #emitC ... </k>
+         <queryFile> .K => #mkstemp("query_XXXXXX") </queryFile>
+
     syntax KItem ::= "#wolfram.launch" "(" String ")"
                    | "#wolfram.result" "(" KItem ")"
 
