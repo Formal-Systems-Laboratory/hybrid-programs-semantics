@@ -9,11 +9,12 @@ module WOLFRAMLANGUAGE-SYNTAX
     imports REAL-SYNTAX
     imports ID-SYNTAX
 
-    syntax FullFormExpressionConst ::= "True"  [token]
-                                     | "Reals" [token]
+    syntax FullFormExpressionConst ::= "True"           [token]
+                                     | "Reals"          [token]
 
     syntax FullFormExpression ::= Id
                                 | FullFormExpressionConst
+                                | String
                                 | Real
                                 | Operator "[" FullFormExpressions "]"
 
@@ -37,7 +38,13 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "Echo"         [token]
                       | "FullForm"     [token]
 		      | "Exists"       [token]
-
+                      | "Needs"        [token]
+                      | "CStruct"      [token]
+                      | "CTypedef"     [token]
+                      | "CPointerType" [token]
+                      | "CReturn"      [token]
+                      | "List"         [token]
+                      | "CFunction"    [token]
 
 endmodule
 
@@ -54,6 +61,7 @@ module WOLFRAMLANGUAGE
     rule #wolfram.expressionToString(ID:Id) => Id2String(ID)
     rule #wolfram.expressionToString(REAL:RealVal) => Real2String(REAL)
     rule #wolfram.expressionToString(C:FullFormExpressionConst) => Const2String(C)
+    rule #wolfram.expressionToString(S:String) => "\"" +String S +String "\""
 
     rule #wolfram.expressionToStringAux( E1:FullFormExpression
                                        , E2:FullFormExpression

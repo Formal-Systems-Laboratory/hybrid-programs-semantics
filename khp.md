@@ -116,11 +116,13 @@ module KHP
                   <state> .Map </state>
                   // Global (non-mutable) prefixed with "g"
                   <gPgmVars> .Ids </gPgmVars>
+                  <gParamVars> .Ids </gParamVars>
                   <gNonDetAssignments> .Map </gNonDetAssignments>
                   <gEvolutionConditions> .Set </gEvolutionConditions>
                   <counter> 0 </counter>
                   <synthesis multiplicity="?">
                     <pgmVars> .Ids </pgmVars>
+                    <paramVars> .Ids </paramVars>
                     <nonDetAssignments> .Map </nonDetAssignments>
                     <evolutionConditions> .Set </evolutionConditions>
                     <constraints> .K </constraints>
@@ -154,6 +156,7 @@ For each variable, the state is bound to a logical Variable of sort `Real`.
 ```{.k}
     rule <k> params ( X:Id , L:Decls => L) ; _ ; _ ... </k>
          <state> ... .Map => (X |-> #VarReal(X)) ... </state>
+         <gParamVars> PARAMS => X, PARAMS </gParamVars>
 
          rule params .Decls ; VARDECLS ; S:Stmts => VARDECLS ; S
 
@@ -503,6 +506,77 @@ C Generation Pipeline
                     <cGenStmts> .List </cGenStmts>
                     ...
                    </synthesis>))
+
+    syntax KItem ::= "#genIncludes"
+                   | "#genStructs"
+                   | "#genFunctions"
+                   | "#launch"
+
+    rule     #emitC
+      =>     #genIncludes
+          ~> #genStructs
+          ~> #genFunctions
+          ~> #launch
+
+    rule <k> #genIncludes => . ... </k>
+         <cGenStmts> (.List => ListItem(Needs["SymbolicC`"])) ... </cGenStmts>
+
+    syntax KItem ::= "#genParamsStruct"
+                   | "#genStateStruct"
+
+    rule <k> #genStructs => #genParamsStruct ~> #genStateStruct ... </k>
+         <gParamVars> PARAM_VARS </gParamVars>
+         <gPgmVars> PGM_VARS </gPgmVars>
+         <pgmVars> _ => PGM_VARS </pgmVars>
+         <paramVars> _ => PARAM_VARS </paramVars>
+
+    rule <k> #genParamsStruct => . ... </k>
+         <paramVars> PARAM_VARS </paramVars>
+         <cGenStmts> ...
+                  (.List => ListItem( CTypedef[ #toStruct( "params"
+                                                         | "long double"
+                                                         | PARAM_VARS
+                                                         )
+                                              , "params"
+                                              ]
+                                    )
+                  )
+         </cGenStmts>
+      requires PARAM_VARS =/=K .Ids
+
+    rule <k> #genParamsStruct => . ... </k>
+         <paramVars> .Ids </paramVars>
+
+    rule <k> #genStateStruct => . ... </k>
+         <pgmVars> PGM_VARS </pgmVars>
+         <cGenStmts> ...
+                  (.List => ListItem( CTypedef[ #toStruct( "state"
+                                                         | "long double"
+                                                         | PGM_VARS
+                                                         )
+                                              , "state"
+                                              ]
+                                    )
+                  )
+         </cGenStmts>
+      requires PGM_VARS =/=K .Ids
+
+    rule <k> #genStateStruct => . ... </k>
+         <paramVars> .Ids </paramVars>
+
+    syntax FullFormExpression ::= "#toStruct" "(" String "|" String "|" Ids ")" [function]
+
+    syntax FullFormExpressions ::= "#toStructMembers" "(" String "|" Ids ")"    [function]
+
+    rule #toStruct(NAME | TYPE | IDS)
+      => CStruct[NAME, List[ #toStructMembers(TYPE | IDS) ] ]
+      requires IDS =/=K .Ids
+
+    rule #toStructMembers(TYPE | ID1:Id, ID2:Id, IDs:Ids)
+      => List[TYPE, ID1 ] , #toStructMembers(TYPE | ID2, IDs)
+
+    rule #toStructMembers(TYPE | ID:Id, .Ids)
+      => List[TYPE, ID]
 
     syntax KItem ::= "#wolfram.launch" "(" String ")"
                    | "#wolfram.result" "(" KItem ")"
