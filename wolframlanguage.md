@@ -74,7 +74,30 @@ module WOLFRAMLANGUAGE
     rule #wolfram.expressionToString(OP:Operator [ EXPRS:FullFormExpressions ])
       => Operator2String(OP)
          +String "[" +String #wolfram.expressionToStringAux(EXPRS) +String "]"
+```
+
+A Simple Visitor for WolframLanguage ASTs
+-----------------------------------------
+
+```{.k}
+    syntax Transformation
+
+    syntax FullFormExpression ::= "#apply" "(" Transformation "|" FullFormExpression ")"                     [function]
+                                | "#wolfram.map" "(" Transformation "|" FullFormExpression ")"  [function]
+
+    syntax FullFormExpressions ::= "#wolfram.mapAux" "(" Transformation "|" FullFormExpressions ")"  [function]
+
+    rule #wolfram.map(T | OP[ARGS] ) => OP[ #wolfram.mapAux(T | ARGS) ]
+
+    rule #wolfram.map(T | EXP) => #apply(T | EXP) [owise]
+
+    rule #wolfram.mapAux(T | ARG1:FullFormExpression
+                           , ARG2:FullFormExpression
+                           , ARGS:FullFormExpressions)
+      => #wolfram.map(T | ARG1) , #wolfram.mapAux(T | ARG2, ARGS)
+
+    rule #wolfram.mapAux(T | ARG:FullFormExpression, .FullFormExpressions)
+      => #wolfram.map(T | ARG)
 
 endmodule
-
 ```
