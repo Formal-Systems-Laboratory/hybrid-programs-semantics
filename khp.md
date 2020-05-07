@@ -586,5 +586,57 @@ C Generation Pipeline
 
     rule #wolfram.result(#systemResult(0, EXPR, _)) => #constraints(EXPR)
 
+    rule <k> #genFunctions => . ... </k>
+         <cGenStmts> ...
+          ( .List
+          => ListItem(CFunction[List["int", "checkViolation"
+                                              , List[ List[ CPointerType["params"]
+                                                          , "params"
+                                                          ]
+                                                    , List[ CPointerType["state"]
+                                                          , "pre"
+                                                          ]
+                                                    , List[ CPointerType["state"]
+                                                          , "curr"
+                                                          ]
+                                                    ]
+                                    ]
+                               , CBlock[ Join[ List[ #genParamAssigns(PARAM_VARS)]
+                                             , List[ #genStateAssigns(PGM_VARS)]
+                                             , List[ CReturn[
+                                                     CExpression[ CForm[
+                                                                   Resolve[ RET_EXPR , Reals ]
+                                                                      ]
+                                                                ]
+                                                           ]
+                                                   ]
+                                             ]
+                                       ]
+                               ]
+                      )
+            )
+          </cGenStmts>
+          <constraints> RET_EXPR:FullFormExpression </constraints>
+          <pgmVars> PGM_VARS </pgmVars>
+          <paramVars> PARAM_VARS </paramVars>
+
+      syntax FullFormExpressions ::= "#genParamAssigns" "(" Ids ")" [function]
+                                   | "#genStateAssigns" "(" Ids ")" [function]
+
+      rule #genParamAssigns(P1:Id, P2:Id, Ps:Ids)
+        => CAssign[P1, CPointerMember["params", P1]], #genParamAssigns(P2, Ps)
+
+      rule #genParamAssigns(P:Id, .Ids)
+        => CAssign[P, CPointerMember["params", P]]
+
+      rule #genStateAssigns(P1:Id, P2:Id, Ps:Ids)
+        =>  CAssign["long double", P1,  CPointerMember["pre", P1]]
+          , CAssign["long double", #appendStrToPgmVar(P1, "post"), CPointerMember["curr", P1]]
+          , #genStateAssigns(P2, Ps)
+
+      rule #genStateAssigns(P:Id, .Ids)
+        =>  CAssign["long double", P,  CPointerMember["pre", P]]
+          , CAssign["long double", #appendStrToPgmVar(P, "post"), CPointerMember["curr", P]]
+
 endmodule
 ```
