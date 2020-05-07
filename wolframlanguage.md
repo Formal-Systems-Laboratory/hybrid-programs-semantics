@@ -50,7 +50,9 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "CAssign"        [token]
                       | "CBlock"         [token]
                       | "CForm"          [token]
+                      | "CProgram"       [token]
                       | "Join"           [token]
+                      | "ToCCodeString"  [token]
 
 endmodule
 

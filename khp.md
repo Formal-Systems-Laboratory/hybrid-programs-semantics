@@ -510,12 +510,17 @@ C Generation Pipeline
     syntax KItem ::= "#genIncludes"
                    | "#genStructs"
                    | "#genFunctions"
+                   | "#genWolframExpression"
+                   | "#writeToFile"
                    | "#launch"
+                   | "#genResult" "(" FullFormExpression ")"
 
     rule     #emitC
       =>     #genIncludes
           ~> #genStructs
           ~> #genFunctions
+          ~> #genWolframExpression
+          ~> #writeToFile
           ~> #launch
 
     rule <k> #genIncludes => . ... </k>
@@ -637,6 +642,25 @@ C Generation Pipeline
       rule #genStateAssigns(P:Id, .Ids)
         =>  CAssign["long double", P,  CPointerMember["pre", P]]
           , CAssign["long double", #appendStrToPgmVar(P, "post"), CPointerMember["curr", P]]
+
+      rule #genWolframExpression
+        => #genResult(CProgram[.FullFormExpressions]) ~> #genWolframExpression
+
+      rule <k> #genResult(CProgram[(Es:FullFormExpressions => E, Es)]) ~> #genWolframExpression ...  </k>
+           <cGenStmts> (L ListItem(E:FullFormExpression)) => L </cGenStmts>
+
+      rule <k> (#genResult(EXP) ~> #genWolframExpression => . ) ...  </k>
+           <cGenStmts> .List </cGenStmts>
+           <constraints> _ => EXP </constraints>
+
+      rule <k> #writeToFile ... </k>
+           <queryFile> .K => #mkstemp("cgen-query-XXXXXX") </queryFile>
+
+      rule <k> #writeToFile =>
+               #write(FD , #wolfram.expressionToString(WLFRAMEXPR))
+            ~> #close(FD) ... </k>
+           <queryFile> #tempFile(_, FD) </queryFile>
+           <constraints> WLFRAMEXPR </constraints>
 
 endmodule
 ```
