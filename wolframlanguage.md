@@ -51,6 +51,7 @@ module WOLFRAMLANGUAGE-SYNTAX
                       | "CBlock"         [token]
                       | "CForm"          [token]
                       | "CProgram"       [token]
+                      | "CDeclare"       [token]
                       | "Join"           [token]
                       | "ToCCodeString"  [token]
 

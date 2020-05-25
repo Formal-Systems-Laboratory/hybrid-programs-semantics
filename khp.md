@@ -507,8 +507,7 @@ C Generation Pipeline
                     ...
                    </synthesis>))
 
-    syntax KItem ::= "#genIncludes"
-                   | "#genStructs"
+    syntax KItem ::= "#genStructs"
                    | "#genFunctions"
                    | "#genWolframExpression"
                    | "#writeToFile"
@@ -516,15 +515,11 @@ C Generation Pipeline
                    | "#genResult" "(" FullFormExpression ")"
 
     rule     #emitC
-      =>     #genIncludes
-          ~> #genStructs
+      =>     #genStructs
           ~> #genFunctions
           ~> #genWolframExpression
           ~> #writeToFile
           ~> #launch
-
-    rule <k> #genIncludes => . ... </k>
-         <cGenStmts> (.List => ListItem(Needs["SymbolicC`"])) ... </cGenStmts>
 
     syntax KItem ::= "#genParamsStruct"
                    | "#genStateStruct"
@@ -594,24 +589,20 @@ C Generation Pipeline
     rule <k> #genFunctions => . ... </k>
          <cGenStmts> ...
           ( .List
-          => ListItem(CFunction[List["int", "checkViolation"
-                                              , List[ List[ CPointerType["params"]
-                                                          , "params"
-                                                          ]
-                                                    , List[ CPointerType["state"]
-                                                          , "pre"
-                                                          ]
-                                                    , List[ CPointerType["state"]
-                                                          , "curr"
-                                                          ]
-                                                    ]
-                                    ]
+          => ListItem(CFunction["int", "checkViolation" , List[ List[ CPointerType["params"]
+                                                                    , "params"
+                                                                    ]
+                                                              , List[ CPointerType["state"]
+                                                                    , "pre"
+                                                                    ]
+                                                              , List[ CPointerType["state"]
+                                                                    , "curr"
+                                                                    ]
+                                                              ]
                                , CBlock[ Join[ List[ #genParamAssigns(PARAM_VARS)]
                                              , List[ #genStateAssigns(PGM_VARS)]
                                              , List[ CReturn[
-                                                     CExpression[ CForm[
-                                                                   Resolve[ RET_EXPR , Reals ]
-                                                                      ]
+                                                     CExpression[ Resolve[ RET_EXPR , Reals ]
                                                                 ]
                                                            ]
                                                    ]
@@ -629,19 +620,19 @@ C Generation Pipeline
                                    | "#genStateAssigns" "(" Ids ")" [function]
 
       rule #genParamAssigns(P1:Id, P2:Id, Ps:Ids)
-        => CAssign[P1, CPointerMember["params", P1]], #genParamAssigns(P2, Ps)
+        => CDeclare["long double", CAssign[P1, CPointerMember["params", P1]]], #genParamAssigns(P2, Ps)
 
       rule #genParamAssigns(P:Id, .Ids)
-        => CAssign[P, CPointerMember["params", P]]
+        => CDeclare["long double", CAssign[P, CPointerMember["params", P]]]
 
       rule #genStateAssigns(P1:Id, P2:Id, Ps:Ids)
-        =>  CAssign["long double", P1,  CPointerMember["pre", P1]]
-          , CAssign["long double", #appendStrToPgmVar(P1, "post"), CPointerMember["curr", P1]]
+        =>  CDeclare["long double", CAssign[P1,  CPointerMember["pre", P1]]]
+          , CDeclare["long double", CAssign[#appendStrToPgmVar(P1, "post"), CPointerMember["curr", P1]]]
           , #genStateAssigns(P2, Ps)
 
       rule #genStateAssigns(P:Id, .Ids)
-        =>  CAssign["long double", P,  CPointerMember["pre", P]]
-          , CAssign["long double", #appendStrToPgmVar(P, "post"), CPointerMember["curr", P]]
+        =>  CDeclare["long double", CAssign[P,  CPointerMember["pre", P]]]
+          , CDeclare["long double", CAssign[#appendStrToPgmVar(P, "post"), CPointerMember["curr", P]]]
 
       rule #genWolframExpression
         => #genResult(CProgram[.FullFormExpressions]) ~> #genWolframExpression
@@ -657,10 +648,13 @@ C Generation Pipeline
            <queryFile> .K => #mkstemp("cgen-query-XXXXXX") </queryFile>
 
       rule <k> #writeToFile =>
-               #write(FD , #wolfram.expressionToString(WLFRAMEXPR))
+               #write(FD,  "Needs[\"SymbolicC`\"] \n")
+            ~> #write(FD , #wolfram.expressionToString(ToCCodeString[WLFRAMEXPR]))
             ~> #close(FD) ... </k>
            <queryFile> #tempFile(_, FD) </queryFile>
-           <constraints> WLFRAMEXPR </constraints>
+           <constraints> WLFRAMEXPR:FullFormExpression </constraints>
 
+      rule <k> #launch => #system("wolframscript -print -f " +String FNAME) ... </k>
+           <queryFile> #tempFile(FNAME, _) </queryFile>
 endmodule
 ```
